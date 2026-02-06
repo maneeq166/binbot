@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/user.model");
 const bcrypt = require("bcrypt");
 
-exports.registerService = async ({ username, email, password }) => {
+exports.registerService = async (username, email, password) => {
   if (!username || !email || !password) {
     return {
       data: null,
@@ -32,7 +32,7 @@ exports.registerService = async ({ username, email, password }) => {
   };
 };
 
-exports.loginService = async ({ email, password }) => {
+exports.loginService = async (email, password ) => {
   if (!email || !password) {
     return {
       data: null,
