@@ -5,6 +5,8 @@ import { loginSchema } from "../validation/auth";
 import { login as loginUser } from "../api/auth";
 import { useNavigate, Link } from "react-router";
 import { toast } from "react-toastify";
+import { Recycle } from "lucide-react";
+
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ const Login = () => {
         <div className="p-8 pb-6 text-center border-b border-slate-800/50">
           <div className="mb-4 flex justify-center items-center gap-2">
             <div className="h-8 w-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-              <svg
+              {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
@@ -61,7 +63,8 @@ const Login = () => {
                 <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                 <line x1="10" y1="11" x2="10" y2="17" />
                 <line x1="14" y1="11" x2="14" y2="17" />
-              </svg>
+              </svg> */}
+              <Recycle size={20} strokeWidth={2.5} />
             </div>
             <span className="text-xl font-bold text-white">BinBot</span>
           </div>
