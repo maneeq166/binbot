@@ -72,8 +72,7 @@ if (NODE_ENV === "development") {
 
 // Routes
 app.get("/", (req, res) => res.send("Welcome to the binbot API"));
-
-
+app.use("/api/auth",require("./src/routes/auth/index"));
 
 //  404 Fallback
 app.use((req, res, next) => {
