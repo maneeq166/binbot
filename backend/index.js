@@ -73,6 +73,8 @@ if (NODE_ENV === "development") {
 // Routes
 app.get("/", (req, res) => res.send("Welcome to the binbot API"));
 app.use("/api/auth",require("./src/routes/auth/index"));
+app.use("/api/waste",require("./src/routes/waste/index"));
+app.use("/api/dashboard",require("./src/routes/dashboard/index"));
 
 //  404 Fallback
 app.use((req, res, next) => {
@@ -87,6 +89,10 @@ app.use((req, res, next) => {
 connectToDatabase(MONGODB_URI);
 
 //  Start listening
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT} in ${NODE_ENV} mode`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT} in ${NODE_ENV} mode`);
+  });
+}
+
+module.exports = app;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   ScanLine, 
   Leaf, 
@@ -9,8 +9,22 @@ import {
   TrendingUp,
   AlertCircle
 } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
 
 const Dashboard = () => {
+  const nav = useNavigate();
+  const auth = ()=>{
+    if(!localStorage.getItem("token")){
+      toast.info("Please login!")
+      nav("/login");
+    }
+  }
+
+  useEffect(()=>{
+      auth();
+  },[])
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans pt-16">
 

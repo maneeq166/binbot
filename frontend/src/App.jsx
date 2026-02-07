@@ -1,22 +1,32 @@
 import { Routes, Route } from "react-router";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/Dashboard";
-import Navigation from "./components/Navigation";
 import Home from "./pages/Home";
+import Layout from "./helper/Layout";
+import Profile from "./pages/Profile"
+import { ToastContainer } from "react-toastify";
 
 export default function App() {
   return (
     <>
-      <Navigation></Navigation>
       <Routes>
-        <Route path="/" element={<Home/>}></Route>
-        <Route path="/register" element={<Register />} ></Route>
-        <Route path="/login" element={<Login />}></Route>
-        <Route path="/dashboard" element={<Dashboard/>}></Route>
+        {/* Public pages (NO NAVBAR) */}
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected / App pages (WITH NAVBAR) */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile/>}></Route>
+          {/* future routes */}
+          {/* <Route path="/history" element={<History />} /> */}
+          {/* <Route path="/analytics" element={<Analytics />} /> */}
+        </Route>
       </Routes>
+
       <ToastContainer position="bottom-right" theme="dark" />
     </>
-  )
+  );
 }
