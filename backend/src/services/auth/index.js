@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../../models/user.model");
+const Waste = require("../../models/waste.model");
 const bcrypt = require("bcrypt");
 const ApiError = require("../../utils/apiError");
 
@@ -100,10 +101,89 @@ exports.getMeService = async (id) => {
     throw new ApiError(404, "User not found");
   }
 
+  const summary = await Waste.aggregate([
+    { $match: { userId: user._id } },
+    {
+      $group: {
+        _id: null,
+        totalItems: { $sum: 1 },
+        biodegradableCount: {
+          $sum: {
+            $cond: [{ $eq: ["$wasteType", "biodegradable"] }, 1, 0],
+          },
+        },
+        nonBiodegradableCount: {
+          $sum: {
+            $cond: [{ $eq: ["$wasteType", "non-biodegradable"] }, 1, 0],
+          },
+        },
+        greenBinUsage: {
+          $sum: { $cond: [{ $eq: ["$binColor", "green"] }, 1, 0] },
+        },
+        blueBinUsage: {
+          $sum: { $cond: [{ $eq: ["$binColor", "blue"] }, 1, 0] },
+        },
+        blackBinUsage: {
+          $sum: { $cond: [{ $eq: ["$binColor", "black"] }, 1, 0] },
+        },
+      },
+    },
+  ]);
+
+  const stats = summary[0] || {
+    totalItems: 0,
+    biodegradableCount: 0,
+    nonBiodegradableCount: 0,
+    greenBinUsage: 0,
+    blueBinUsage: 0,
+    blackBinUsage: 0,
+  };
+
+  const biodegradablePercentage =
+    stats.totalItems > 0
+      ? Number(((stats.biodegradableCount / stats.totalItems) * 100).toFixed(1))
+      : 0;
+  const nonBiodegradablePercentage =
+    stats.totalItems > 0
+      ? Number(((stats.nonBiodegradableCount / stats.totalItems) * 100).toFixed(1))
+      : 0;
+
+  const recentActivity = await Waste.findOne({ userId: user._id })
+    .sort({ createdAt: -1 })
+    .select("inputValue wasteType binColor createdAt")
+    .lean();
+
   console.log(`User profile accessed: ${user.email}`);
 
   return {
-    data: { id: user._id, username: user.username, email: user.email, isActive: user.isActive, createdAt: user.createdAt },
+    data: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      impactSummary: {
+        totalItems: stats.totalItems,
+        biodegradableCount: stats.biodegradableCount,
+        nonBiodegradableCount: stats.nonBiodegradableCount,
+        biodegradablePercentage,
+        nonBiodegradablePercentage,
+        binUsage: {
+          green: stats.greenBinUsage,
+          blue: stats.blueBinUsage,
+          black: stats.blackBinUsage,
+        },
+      },
+      recentActivity: recentActivity
+        ? {
+            itemName: recentActivity.inputValue,
+            wasteType: recentActivity.wasteType,
+            binColor: recentActivity.binColor,
+            classifiedAt: recentActivity.createdAt,
+          }
+        : null,
+    },
     message: "User found",
     statusCode: 200,
   };

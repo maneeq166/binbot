@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { getDashboardSummary } from '../api/dashboard';
 import { 
   ScanLine, 
   Leaf, 
@@ -14,16 +15,65 @@ import { toast } from 'react-toastify';
 
 const Dashboard = () => {
   const nav = useNavigate();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+
   const auth = ()=>{
     if(!localStorage.getItem("token")){
       toast.info("Please login!")
       nav("/login");
+      return false;
     }
+    return true;
   }
 
   useEffect(()=>{
-      auth();
-  },[])
+      const isAuthed = auth();
+      if (!isAuthed) {
+        setIsLoading(false);
+        return;
+      }
+      let isActive = true;
+      const run = async () => {
+        setIsLoading(true);
+        try {
+          const result = await getDashboardSummary();
+          if (!isActive) return;
+          if (result?.success) {
+            setDashboardData(result.data ?? null);
+          } else {
+            toast.error(result?.message || "Failed to load dashboard data");
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error("Failed to load dashboard data");
+        } finally {
+          if (isActive) setIsLoading(false);
+        }
+      };
+      run();
+      return () => {
+        isActive = false;
+      };
+  },[nav])
+
+  const stats = useMemo(() => {
+    const totalItems = Number(dashboardData?.totalItems) || 0;
+    const biodegradableCount = Number(dashboardData?.biodegradableCount) || 0;
+    const nonBiodegradableCount = Number(dashboardData?.nonBiodegradableCount) || 0;
+    const biodegradablePct = totalItems > 0 ? Math.round((biodegradableCount / totalItems) * 100) : 0;
+    const nonBiodegradablePct = totalItems > 0 ? Math.round((nonBiodegradableCount / totalItems) * 100) : 0;
+    const divertedKg = (biodegradableCount * 0.1).toFixed(1);
+    return {
+      totalItems,
+      biodegradableCount,
+      nonBiodegradableCount,
+      biodegradablePct,
+      nonBiodegradablePct,
+      divertedKg,
+    };
+  }, [dashboardData]);
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans pt-16">
@@ -38,9 +88,12 @@ const Dashboard = () => {
               Welcome back, Alex!
             </h1>
             <p className="text-slate-400 max-w-xl text-lg mb-8">
-              You've diverted <span className="text-emerald-400 font-semibold">124kg</span> of waste from landfills this month.
+              You've diverted <span className="text-emerald-400 font-semibold">{stats.divertedKg}kg</span> of waste from landfills this month.
             </p>
-            <button className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#0f172a] font-semibold py-3 px-6 rounded-lg transition-all shadow-md shadow-emerald-900/20 hover:shadow-emerald-900/40">
+            <button
+              onClick={() => nav("/classify")}
+              className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#0f172a] font-semibold py-3 px-6 rounded-lg transition-all shadow-md shadow-emerald-900/20 hover:shadow-emerald-900/40"
+            >
               <ScanLine size={20} />
               Classify Waste Now
             </button>
@@ -50,29 +103,29 @@ const Dashboard = () => {
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            title="Total Items Analyzed" 
-            value="1,248" 
-            trend="+12% vs last month" 
-            icon={<Activity size={20} className="text-blue-400" />} 
+          <StatCard
+            title="Total Items Analyzed"
+            value={stats.totalItems.toLocaleString()}
+            trend={isLoading ? "Loading..." : "+12% vs last month"}
+            icon={<Activity size={20} className="text-blue-400" />}
           />
-          <StatCard 
-            title="Biodegradable" 
-            value="850" 
-            sub="68% of total"
-            icon={<Leaf size={20} className="text-emerald-400" />} 
+          <StatCard
+            title="Biodegradable"
+            value={stats.biodegradableCount.toLocaleString()}
+            sub={`${stats.biodegradablePct}% of total`}
+            icon={<Leaf size={20} className="text-emerald-400" />}
           />
-          <StatCard 
-            title="Non-Biodegradable" 
-            value="398" 
-            sub="32% of total"
-            icon={<Trash2 size={20} className="text-amber-400" />} 
+          <StatCard
+            title="Non-Biodegradable"
+            value={stats.nonBiodegradableCount.toLocaleString()}
+            sub={`${stats.nonBiodegradablePct}% of total`}
+            icon={<Trash2 size={20} className="text-amber-400" />}
           />
-          <StatCard 
-            title="Bin Accuracy" 
-            value="98.5%" 
-            trend="Top tier performance" 
-            icon={<TrendingUp size={20} className="text-purple-400" />} 
+          <StatCard
+            title="Bin Accuracy"
+            value="98.5%"
+            trend={isLoading ? "Loading..." : "Top tier performance"}
+            icon={<TrendingUp size={20} className="text-purple-400" />}
           />
         </div>
 
@@ -86,23 +139,20 @@ const Dashboard = () => {
             </div>
             
             <div className="space-y-4">
-              <ActivityItem 
-                type="Organic" 
-                desc="Apple Core classified as Compost" 
-                time="2 mins ago" 
-                status="Correct" 
+              <ActivityItem
+                desc="Apple Core classified as Compost"
+                time="2 mins ago"
+                status="Correct"
               />
-              <ActivityItem 
-                type="Plastic" 
-                desc="Water Bottle classified as Recycle" 
-                time="15 mins ago" 
-                status="Correct" 
+              <ActivityItem
+                desc="Water Bottle classified as Recycle"
+                time="15 mins ago"
+                status="Correct"
               />
-              <ActivityItem 
-                type="Paper" 
-                desc="Cardboard Box classified as Recycle" 
-                time="1 hour ago" 
-                status="Review" 
+              <ActivityItem
+                desc="Cardboard Box classified as Recycle"
+                time="1 hour ago"
+                status="Review"
               />
             </div>
           </div>
@@ -152,7 +202,7 @@ const StatCard = ({ title, value, sub, trend, icon }) => (
   </div>
 );
 
-const ActivityItem = ({ type, desc, time, status }) => (
+const ActivityItem = ({ desc, time, status }) => (
   <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-lg border border-slate-800/50">
     <div className="flex items-center gap-4">
       <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">

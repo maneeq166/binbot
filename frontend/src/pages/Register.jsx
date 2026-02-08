@@ -70,8 +70,10 @@ const Register = () => {
               <input
                 type="text"
                 {...register("username")}
+                autoComplete="username"
                 placeholder="johndoe"
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500/50"
+                aria-invalid={Boolean(errors.username)}
+                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
               />
               {errors.username && (
                 <p className="text-sm text-red-400 mt-1">
@@ -86,8 +88,10 @@ const Register = () => {
               <input
                 type="email"
                 {...register("email")}
+                autoComplete="email"
                 placeholder="name@company.com"
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500/50"
+                aria-invalid={Boolean(errors.email)}
+                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
               />
               {errors.email && (
                 <p className="text-sm text-red-400 mt-1">
@@ -102,8 +106,10 @@ const Register = () => {
               <input
                 type="password"
                 {...register("password")}
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500/50"
+                autoComplete="new-password"
+                placeholder="********"
+                aria-invalid={Boolean(errors.password)}
+                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
               />
               {errors.password && (
                 <p className="text-sm text-red-400 mt-1">
@@ -120,8 +126,10 @@ const Register = () => {
               <input
                 type="password"
                 {...register("confirmPassword")}
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500/50"
+                autoComplete="new-password"
+                placeholder="********"
+                aria-invalid={Boolean(errors.confirmPassword)}
+                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
               />
               {errors.confirmPassword && (
                 <p className="text-sm text-red-400 mt-1">
@@ -134,7 +142,8 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-lg font-semibold text-[#0f172a] bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60"
+              aria-busy={loading}
+              className="w-full py-2.5 rounded-lg font-semibold text-[#0f172a] bg-emerald-500 transition active:scale-[0.99] hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? "Creating account..." : "Create Account"}
             </button>

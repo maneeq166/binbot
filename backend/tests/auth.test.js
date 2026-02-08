@@ -186,7 +186,45 @@ describe('Auth Routes', () => {
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data.email).toBe('test@example.com');
       expect(response.body.data.username).toBe('testuser');
+      expect(response.body.data.impactSummary).toEqual({
+        totalItems: 0,
+        biodegradableCount: 0,
+        nonBiodegradableCount: 0,
+        biodegradablePercentage: 0,
+        nonBiodegradablePercentage: 0,
+        binUsage: { green: 0, blue: 0, black: 0 },
+      });
+      expect(response.body.data.recentActivity).toBeNull();
       expect(response.body.message).toBe('User found');
+    });
+
+    it('should return impact summary and recent activity when waste records exist', async () => {
+      await request(app)
+        .post('/api/waste/create')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ wastename: 'apple' })
+        .expect(201);
+
+      await request(app)
+        .post('/api/waste/create')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ wastename: 'plastic bottle' })
+        .expect(201);
+
+      const response = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.impactSummary.totalItems).toBe(2);
+      expect(response.body.data.impactSummary.biodegradableCount).toBe(1);
+      expect(response.body.data.impactSummary.nonBiodegradableCount).toBe(1);
+      expect(response.body.data.impactSummary.binUsage.green).toBe(1);
+      expect(response.body.data.impactSummary.binUsage.blue).toBe(1);
+      expect(response.body.data.impactSummary.binUsage.black).toBe(0);
+      expect(response.body.data.recentActivity).toHaveProperty('itemName');
+      expect(response.body.data.recentActivity).toHaveProperty('classifiedAt');
     });
 
     it('should return 401 without token', async () => {

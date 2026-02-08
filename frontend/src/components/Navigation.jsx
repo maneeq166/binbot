@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, Link } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router';
 import { 
   LayoutDashboard, 
   ScanLine, 
@@ -13,19 +13,80 @@ import {
   Settings,
   ChevronDown 
 } from 'lucide-react';
+import { me } from '../api/auth';
 
 const Navigation = () => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem("token")));
+  const [profileName, setProfileName] = useState("User");
+  const [profileEmail, setProfileEmail] = useState("");
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const toggleProfileDropdown = () => setIsProfileOpen(!isProfileOpen);
 
-  const navItems = [
+  useEffect(() => {
+    const syncAuth = () => setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    window.addEventListener("storage", syncAuth);
+    return () => window.removeEventListener("storage", syncAuth);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setProfileName("User");
+      setProfileEmail("");
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      const response = await me();
+      if (!isMounted) return;
+
+      if (response?.success && response?.data) {
+        const username = response.data.username || "User";
+        const displayName = username
+          .replace(/[._-]+/g, " ")
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((part) => part[0].toUpperCase() + part.slice(1))
+          .join(" ");
+
+        setProfileName(displayName || "User");
+        setProfileEmail(response.data.email || "");
+      } else {
+        setProfileName("User");
+        setProfileEmail("");
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoggedIn]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
+    navigate("/login");
+  };
+
+  const navItems = isLoggedIn ? [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Classify', path: '/classify', icon: ScanLine },
     { name: 'History', path: '/history', icon: History },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+  ] : [
+    { name: 'Home', path: '/', icon: LayoutDashboard },
+    { name: 'Login', path: '/login', icon: User },
+    { name: 'Register', path: '/register', icon: ScanLine },
   ];
 
   return (
@@ -67,52 +128,63 @@ const Navigation = () => {
 
           {/* Right: User Profile & Mobile Toggle */}
           <div className="hidden md:block">
-            <div className="relative ml-3">
-              <div>
-                <button
-                  onClick={toggleProfileDropdown}
-                  className="flex items-center max-w-xs text-sm bg-slate-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-emerald-500 pl-1 pr-3 py-1 border border-slate-700 hover:border-slate-600 transition-colors"
-                >
-                  <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 mr-2">
-                    <User size={16} />
-                  </div>
-                  <span className="text-slate-200 font-medium mr-1">Alex M.</span>
-                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
-                </button>
-              </div>
-
-              {/* Profile Dropdown */}
-              {isProfileOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-slate-700">
-                  <div className="py-1">
-                    <Link
-                      to="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white"
-                      onClick={() => setIsProfileOpen(false)}
-                    >
-                      <User size={16} className="mr-2" /> Profile
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white"
-                      onClick={() => setIsProfileOpen(false)}
-                    >
-                      <Settings size={16} className="mr-2" /> Settings
-                    </Link>
-                    <div className="border-t border-slate-700 my-1"></div>
-                    <button
-                      className="flex w-full items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700/50 hover:text-red-300"
-                      onClick={() => {
-                        console.log('Logout clicked');
-                        setIsProfileOpen(false);
-                      }}
-                    >
-                      <LogOut size={16} className="mr-2" /> Sign out
-                    </button>
-                  </div>
+            {isLoggedIn ? (
+              <div className="relative ml-3">
+                <div>
+                  <button
+                    onClick={toggleProfileDropdown}
+                    className="flex items-center max-w-xs text-sm bg-slate-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-emerald-500 pl-1 pr-3 py-1 border border-slate-700 hover:border-slate-600 transition-colors"
+                  >
+                    <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 mr-2">
+                      <User size={16} />
+                    </div>
+                    <span className="text-slate-200 font-medium mr-1">{profileName}</span>
+                    <ChevronDown size={14} className={`text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  </button>
                 </div>
-              )}
-            </div>
+
+                {/* Profile Dropdown */}
+                {isProfileOpen && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-slate-700">
+                    <div className="py-1">
+                      <Link
+                        to="/profile"
+                        className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <User size={16} className="mr-2" /> Profile
+                      </Link>
+                      <Link
+                        to="/settings"
+                        className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <Settings size={16} className="mr-2" /> Settings
+                      </Link>
+                      <div className="border-t border-slate-700 my-1"></div>
+                      <button
+                        className="flex w-full items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700/50 hover:text-red-300"
+                        onClick={handleLogout}
+                      >
+                        <LogOut size={16} className="mr-2" /> Sign out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                  Log in
+                </Link>
+                <Link
+                  to="/register"
+                  className="text-sm font-semibold bg-emerald-500 text-[#0f172a] px-4 py-2 rounded-lg hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -156,34 +228,53 @@ const Navigation = () => {
             ))}
           </div>
           {/* Mobile User Section */}
-          <div className="pt-4 pb-4 border-t border-slate-800">
-            <div className="flex items-center px-5">
-              <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300">
-                  <User size={20} />
+          {isLoggedIn ? (
+            <div className="pt-4 pb-4 border-t border-slate-800">
+              <div className="flex items-center px-5">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300">
+                    <User size={20} />
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <div className="text-base font-medium leading-none text-white">{profileName}</div>
+                  <div className="text-sm font-medium leading-none text-slate-400 mt-1">{profileEmail || " "}</div>
                 </div>
               </div>
-              <div className="ml-3">
-                <div className="text-base font-medium leading-none text-white">Alex Morgan</div>
-                <div className="text-sm font-medium leading-none text-slate-400 mt-1">alex@ecocorp.com</div>
+              <div className="mt-3 px-2 space-y-1">
+                <Link
+                  to="/profile"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Your Profile
+                </Link>
+                <button
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+                  onClick={handleLogout}
+                >
+                  Sign out
+                </button>
               </div>
             </div>
-            <div className="mt-3 px-2 space-y-1">
+          ) : (
+            <div className="pt-4 pb-4 border-t border-slate-800 px-4">
               <Link
-                to="/profile"
-                className="block px-3 py-2 rounded-md text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+                to="/login"
+                className="block w-full text-center px-4 py-2 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Your Profile
+                Log in
               </Link>
-              <button
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+              <Link
+                to="/register"
+                className="mt-2 block w-full text-center px-4 py-2 rounded-md text-base font-semibold text-[#0f172a] bg-emerald-500 hover:bg-emerald-400"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Sign out
-              </button>
+                Get Started
+              </Link>
             </div>
-          </div>
+          )}
         </div>
       )}
     </nav>
