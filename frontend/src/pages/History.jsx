@@ -1,23 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Clock, 
   Calendar, 
   Leaf, 
   Recycle, 
   Trash2, 
-  Search, 
   Filter, 
   Download,
   MoreHorizontal
 } from 'lucide-react';
+import { getWasteHistory } from '../api/waste';
 
 const History = () => {
   const [historyItems, setHistoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalCount, setTotalCount] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+  const isMountedRef = useRef(false);
+  const copyTimerRef = useRef(null);
+  const navigate = useNavigate();
 
   const formatBinLabel = (binColor) => {
     const value = String(binColor || '').trim().toLowerCase();
@@ -53,76 +60,74 @@ const History = () => {
     };
   };
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchHistory = useCallback(async () => {
+    setLoading(true);
+    setError('');
 
-    const fetchHistory = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No token found');
+    try {
+      const payload = await getWasteHistory(page, limit);
+      if (!payload?.success) {
+        throw new Error(payload?.message || 'Failed to fetch history');
+      }
+
+      const records = payload?.data?.history || [];
+      const pagination = payload?.data?.pagination;
+      const normalized = Array.isArray(records)
+        ? records.map((record, index) => {
+            const { date, time } = formatDateTime(record?.createdAt || record?.updatedAt);
+            return {
+              id: record?._id || record?.id || `${record?.createdAt || 'item'}-${index}`,
+              item: record?.wasteName || record?.inputValue || record?.wastename || 'Unknown item',
+              type: formatWasteType(record?.wasteType) || 'Unclassified',
+              bin: formatBinLabel(record?.binColor),
+              date,
+              time,
+            };
+          })
+        : [];
+
+      if (isMountedRef.current) {
+        setHistoryItems(normalized);
+        setActiveMenuId(null);
+        if (pagination && typeof pagination.total === 'number') {
+          setTotalCount(pagination.total);
+        } else {
+          setTotalCount(normalized.length);
         }
-
-        const response = await fetch(`http://localhost:3000/api/waste/history?page=${page}&limit=${limit}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload?.message || 'Failed to fetch history');
-        }
-
-        const records = payload?.data?.history || payload?.data || [];
-        const pagination = payload?.data?.pagination;
-        const normalized = Array.isArray(records)
-          ? records.map((record, index) => {
-              const { date, time } = formatDateTime(record?.createdAt);
-              return {
-                id: record?._id || record?.id || `${record?.createdAt || 'item'}-${index}`,
-                item: record?.wasteName || record?.inputValue || '',
-                type: formatWasteType(record?.wasteType),
-                bin: formatBinLabel(record?.binColor),
-                date,
-                time,
-              };
-            })
-          : [];
-
-        if (isMounted) {
-          setHistoryItems(normalized);
-          if (pagination && typeof pagination.total === 'number') {
-            setTotalCount(pagination.total);
-          } else {
-            setTotalCount(normalized.length);
+        if (pagination && typeof pagination.pages === 'number') {
+          const nextPages = pagination.pages || 1;
+          setTotalPages(nextPages);
+          if (page > nextPages) {
+            setPage(nextPages);
           }
-          if (pagination && typeof pagination.pages === 'number') {
-            setTotalPages(pagination.pages || 1);
-          } else {
-            setTotalPages(1);
-          }
-        }
-      } catch (error) {
-        if (isMounted) {
-          setHistoryItems([]);
-          setTotalCount(0);
+        } else {
           setTotalPages(1);
         }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+      }
+    } catch (error) {
+      if (isMountedRef.current) {
+        setHistoryItems([]);
+        setTotalCount(0);
+        setTotalPages(1);
+        setError(error?.message || 'Unable to load history.');
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [limit, page]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    fetchHistory();
+    return () => {
+      isMountedRef.current = false;
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
       }
     };
-
-    fetchHistory();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [page, limit]);
+  }, [fetchHistory]);
 
   const getBinStyles = (bin) => {
     switch (bin) {
@@ -145,10 +150,40 @@ const History = () => {
     }
   };
 
+  const handleCopyItem = async (item) => {
+    const value = String(item?.item || '').trim();
+    if (!value || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedId(item.id);
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+      }
+      copyTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
+    } catch (err) {
+      console.error('Failed to copy item name', err);
+    }
+  };
+
+  const handleReclassify = (item) => {
+    const value = String(item?.item || '').trim();
+    if (!value) return;
+    const params = new URLSearchParams({ query: value });
+    navigate(`/classify?${params.toString()}`);
+  };
+
+  const toggleMenu = (id) => {
+    setActiveMenuId((current) => (current === id ? null : id));
+  };
+
   const showEmptyState = !loading && historyItems.length === 0;
   const totalResults = Number.isInteger(totalCount) ? totalCount : historyItems.length;
   const canGoPrev = !loading && page > 1;
   const canGoNext = !loading && page < totalPages;
+  const hasClipboard = typeof navigator !== 'undefined' && Boolean(navigator.clipboard?.writeText);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -176,7 +211,32 @@ const History = () => {
       {/* 2. Main History Content */}
       <div className="bg-slate-800/50 border border-slate-800 rounded-xl shadow-sm overflow-hidden backdrop-blur-sm">
         
-        {historyItems.length > 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className="bg-slate-900/50 p-4 rounded-full mb-4 border border-slate-800">
+              <Clock size={28} className="text-slate-500 animate-pulse" />
+            </div>
+            <h3 className="text-lg font-medium text-white mb-1">Loading history</h3>
+            <p className="text-slate-400 max-w-sm text-sm">
+              Fetching your latest waste classifications.
+            </p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className="bg-rose-500/10 p-4 rounded-full mb-4 border border-rose-500/20">
+              <Trash2 size={28} className="text-rose-400" />
+            </div>
+            <h3 className="text-lg font-medium text-white mb-1">Unable to load history</h3>
+            <p className="text-slate-400 max-w-sm text-sm mb-6">{error}</p>
+            <button
+              type="button"
+              onClick={fetchHistory}
+              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-slate-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : historyItems.length > 0 ? (
           <>
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
@@ -207,14 +267,49 @@ const History = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-sm text-slate-300">{item.date}</span>
-                          <span className="text-xs text-slate-500">{item.time}</span>
+                          <span className="text-sm text-slate-300">{item.date || '--'}</span>
+                          <span className="text-xs text-slate-500">{item.time || '--'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-700 transition-colors">
-                          <MoreHorizontal size={16} />
-                        </button>
+                        <div className="relative inline-flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => toggleMenu(item.id)}
+                            className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-700 transition-colors"
+                            aria-haspopup="menu"
+                            aria-expanded={activeMenuId === item.id}
+                          >
+                            <MoreHorizontal size={16} />
+                          </button>
+                          {activeMenuId === item.id && (
+                            <div className="absolute right-0 top-8 z-10 w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-lg backdrop-blur-sm p-1 text-left">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleReclassify(item);
+                                  setActiveMenuId(null);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors"
+                              >
+                                Reclassify item
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyItem(item)}
+                                disabled={!hasClipboard || !item.item}
+                                className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors disabled:text-slate-500 disabled:hover:bg-transparent"
+                              >
+                                {copiedId === item.id ? 'Copied' : 'Copy item name'}
+                              </button>
+                              {!hasClipboard && (
+                                <div className="px-3 pb-2 text-[11px] text-slate-500">
+                                  Clipboard not available
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -231,9 +326,44 @@ const History = () => {
                       <h3 className="font-medium text-white">{item.item}</h3>
                       <p className="text-sm text-slate-400">{item.type}</p>
                     </div>
-                    <button className="text-slate-500 hover:text-white">
-                      <MoreHorizontal size={16} />
-                    </button>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => toggleMenu(item.id)}
+                        className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-700 transition-colors"
+                        aria-haspopup="menu"
+                        aria-expanded={activeMenuId === item.id}
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                      {activeMenuId === item.id && (
+                        <div className="absolute right-0 top-8 z-10 w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-lg backdrop-blur-sm p-1 text-left">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleReclassify(item);
+                              setActiveMenuId(null);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors"
+                          >
+                            Reclassify item
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyItem(item)}
+                            disabled={!hasClipboard || !item.item}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors disabled:text-slate-500 disabled:hover:bg-transparent"
+                          >
+                            {copiedId === item.id ? 'Copied' : 'Copy item name'}
+                          </button>
+                          {!hasClipboard && (
+                            <div className="px-3 pb-2 text-[11px] text-slate-500">
+                              Clipboard not available
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center justify-between mt-2">
@@ -243,7 +373,9 @@ const History = () => {
                     </span>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500">
                       <Calendar size={12} />
-                      {item.date}
+                      <span>{item.date || '--'}</span>
+                      <span className="text-slate-600">|</span>
+                      <span>{item.time || '--'}</span>
                     </div>
                   </div>
                 </div>

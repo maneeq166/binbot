@@ -21,3 +21,24 @@ export const getDashboardSummary = async () => {
     return { success: false, message: msg };
   }
 };
+
+export const getDashboardAnalytics = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No token found");
+    }
+
+    const res = await axios.get("http://localhost:3000/api/dashboard/analytics", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    const msg = error.response?.data?.message || error.message;
+    toast.error(msg);
+    return { success: false, message: msg };
+  }
+};

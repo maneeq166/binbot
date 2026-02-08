@@ -1,19 +1,153 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
   Leaf, 
-  Recycle, 
   Trash2, 
   Info, 
   ArrowUpRight, 
-  Calendar,
   AlertCircle
 } from 'lucide-react';
+import { getDashboardAnalytics } from '../api/dashboard';
 
 const Analytics = () => {
-  // Toggle this to false to see the Empty State
-  const [hasData] = useState(true);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const data = await getDashboardAnalytics();
+        if (data.success) {
+          setAnalyticsData(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAnalytics();
+  }, []);
+
+  const safeNumber = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const clampPercent = (value) => {
+    const parsed = safeNumber(value);
+    const rounded = Math.round(parsed * 10) / 10;
+    return Math.min(100, Math.max(0, rounded));
+  };
+
+  const analytics = analyticsData || {
+    bioVsNonBioPercentage: { biodegradable: 0, "non-biodegradable": 0 },
+    binUsagePercentage: { green: 0, blue: 0, black: 0 },
+    totalClassificationsOverTime: []
+  };
+
+  const activitySeries = Array.isArray(analytics.totalClassificationsOverTime)
+    ? analytics.totalClassificationsOverTime
+    : [];
+
+  const totalClassifications = activitySeries.reduce((sum, entry) => sum + safeNumber(entry.count), 0);
+  const activeDays = activitySeries.length;
+  const avgPerDay = activeDays > 0 ? Math.round((totalClassifications / activeDays) * 10) / 10 : 0;
+  const lastActiveDate = activeDays > 0 ? activitySeries[activitySeries.length - 1].date : null;
+
+  const bioPercent = clampPercent(analytics.bioVsNonBioPercentage?.biodegradable);
+  const nonBioPercent = clampPercent(analytics.bioVsNonBioPercentage?.["non-biodegradable"]);
+  const greenPercent = clampPercent(analytics.binUsagePercentage?.green);
+  const bluePercent = clampPercent(analytics.binUsagePercentage?.blue);
+  const blackPercent = clampPercent(analytics.binUsagePercentage?.black);
+
+  const biodegradableCount = totalClassifications > 0
+    ? Math.round((bioPercent / 100) * totalClassifications)
+    : 0;
+  const nonBiodegradableCount = totalClassifications > 0
+    ? Math.max(0, totalClassifications - biodegradableCount)
+    : 0;
+  const greenBinCount = totalClassifications > 0
+    ? Math.round((greenPercent / 100) * totalClassifications)
+    : 0;
+  const blueBinCount = totalClassifications > 0
+    ? Math.round((bluePercent / 100) * totalClassifications)
+    : 0;
+  const blackBinCount = totalClassifications > 0
+    ? Math.max(0, totalClassifications - greenBinCount - blueBinCount)
+    : 0;
+
+  const computeTrend = (series) => {
+    if (!Array.isArray(series) || series.length < 2) {
+      return null;
+    }
+
+    const windowSize = Math.min(7, Math.floor(series.length / 2));
+    if (windowSize < 1) {
+      return null;
+    }
+
+    const recent = series.slice(-windowSize);
+    const previous = series.slice(-(windowSize * 2), -windowSize);
+    const recentSum = recent.reduce((sum, entry) => sum + safeNumber(entry.count), 0);
+    const previousSum = previous.reduce((sum, entry) => sum + safeNumber(entry.count), 0);
+
+    if (previousSum === 0) {
+      return null;
+    }
+
+    const delta = Math.round(((recentSum - previousSum) / previousSum) * 100);
+    return {
+      delta,
+      label: `${delta > 0 ? '+' : ''}${delta}%`,
+      up: delta >= 0,
+      windowSize
+    };
+  };
+
+  const trendSummary = computeTrend(activitySeries);
+  const diversionRate = Math.min(100, Math.max(0, Math.round(greenPercent + bluePercent)));
+
+  const insights = [];
+  if (totalClassifications > 0) {
+    if (diversionRate >= 70) {
+      insights.push({
+        type: 'positive',
+        text: `Great work. ${diversionRate}% of your items were diverted from landfill.`
+      });
+    } else if (diversionRate > 0) {
+      insights.push({
+        type: 'suggestion',
+        text: `${diversionRate}% of items were diverted. Aim to increase green and blue bin usage.`
+      });
+    }
+
+    if (bioPercent >= 60) {
+      insights.push({
+        type: 'positive',
+        text: `Biodegradable items make up ${bioPercent}% of your classifications.`
+      });
+    } else if (nonBioPercent >= 60) {
+      insights.push({
+        type: 'suggestion',
+        text: `Non-biodegradable items are ${nonBioPercent}% of your total. Consider reducing landfill waste.`
+      });
+    }
+
+    if (trendSummary && trendSummary.delta !== 0) {
+      insights.push({
+        type: trendSummary.up ? 'positive' : 'suggestion',
+        text: trendSummary.up
+          ? `Activity is up ${trendSummary.delta}% over the last ${trendSummary.windowSize} days.`
+          : `Activity is down ${Math.abs(trendSummary.delta)}% over the last ${trendSummary.windowSize} days.`
+      });
+    }
+  }
+
+  const hasData = totalClassifications > 0 && !loading;
+  const formatNumber = (value) => safeNumber(value).toLocaleString();
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -41,28 +175,28 @@ const Analytics = () => {
             {/* Total Waste Card */}
             <SummaryCard 
               title="Total Waste Classified" 
-              value="1,248" 
+              value={formatNumber(totalClassifications)} 
               unit="items"
-              trend="+12%" 
-              trendUp={true}
+              trend={trendSummary?.label} 
+              trendUp={trendSummary?.up}
               icon={<BarChart3 size={20} className="text-blue-400" />}
               color="blue"
             />
             {/* Biodegradable Card */}
             <SummaryCard 
               title="Biodegradable" 
-              value="850" 
+              value={formatNumber(biodegradableCount)} 
               unit="items"
-              subtext="68% of total waste"
+              subtext={`${bioPercent}% of total waste`}
               icon={<Leaf size={20} className="text-emerald-400" />}
               color="emerald"
             />
             {/* Non-Biodegradable Card */}
             <SummaryCard 
               title="Non-Biodegradable" 
-              value="398" 
+              value={formatNumber(nonBiodegradableCount)} 
               unit="items"
-              subtext="32% of total waste"
+              subtext={`${nonBioPercent}% of total waste`}
               icon={<Trash2 size={20} className="text-slate-400" />}
               color="slate"
             />
@@ -83,8 +217,8 @@ const Analytics = () => {
                 {/* Green Bin Bar */}
                 <BinProgressBar 
                   label="Green Bin (Compost)" 
-                  percentage={68} 
-                  count="850 items" 
+                  percentage={greenPercent} 
+                  count={`${formatNumber(greenBinCount)} items`} 
                   color="bg-emerald-500" 
                   textColor="text-emerald-400" 
                 />
@@ -92,8 +226,8 @@ const Analytics = () => {
                 {/* Blue Bin Bar */}
                 <BinProgressBar 
                   label="Blue Bin (Recycling)" 
-                  percentage={25} 
-                  count="312 items" 
+                  percentage={bluePercent} 
+                  count={`${formatNumber(blueBinCount)} items`} 
                   color="bg-blue-500" 
                   textColor="text-blue-400" 
                 />
@@ -101,8 +235,8 @@ const Analytics = () => {
                 {/* Black Bin Bar */}
                 <BinProgressBar 
                   label="Black Bin (Landfill)" 
-                  percentage={7} 
-                  count="86 items" 
+                  percentage={blackPercent} 
+                  count={`${formatNumber(blackBinCount)} items`} 
                   color="bg-slate-500" 
                   textColor="text-slate-400" 
                 />
@@ -110,16 +244,16 @@ const Analytics = () => {
 
               <div className="mt-8 pt-6 border-t border-slate-800 grid grid-cols-3 gap-4 text-center">
                  <div>
-                   <div className="text-2xl font-bold text-white">98%</div>
-                   <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Accuracy</div>
+                   <div className="text-2xl font-bold text-white">{formatNumber(activeDays)}</div>
+                   <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Active Days</div>
                  </div>
                  <div>
-                   <div className="text-2xl font-bold text-white">12kg</div>
-                   <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Est. Weight</div>
+                   <div className="text-2xl font-bold text-white">{avgPerDay}</div>
+                   <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Avg / Day</div>
                  </div>
                  <div>
-                   <div className="text-2xl font-bold text-white">4.2kg</div>
-                   <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">CO2 Saved</div>
+                   <div className="text-2xl font-bold text-white">{lastActiveDate || "--"}</div>
+                   <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Last Active</div>
                  </div>
               </div>
             </div>
@@ -132,18 +266,19 @@ const Analytics = () => {
               </h3>
               
               <div className="space-y-4 flex-1">
-                <InsightItem 
-                  text="You classify biodegradable waste more accurately than 85% of users."
-                  type="positive"
-                />
-                <InsightItem 
-                  text="Most of your waste (68%) is going to the green bin. Excellent diversion rate."
-                  type="neutral"
-                />
-                <InsightItem 
-                  text="Consider checking local guidelines for 'soft plastics' to improve blue bin accuracy."
-                  type="suggestion"
-                />
+                {insights.length > 0 ? (
+                  insights.map((insight, index) => (
+                    <InsightItem 
+                      key={index}
+                      text={insight.text}
+                      type={insight.type}
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400">
+                    No insights yet. Classify more items to unlock trends.
+                  </p>
+                )}
               </div>
 
               <button className="mt-6 w-full py-2.5 text-sm font-medium text-slate-300 border border-slate-700 hover:bg-slate-800 hover:text-white rounded-lg transition-colors flex items-center justify-center gap-2">
@@ -151,6 +286,10 @@ const Analytics = () => {
               </button>
             </div>
           </div>
+        </div>
+      ) : loading ? (
+        <div className="min-h-[400px] flex items-center justify-center">
+          <div className="text-white">Loading analytics...</div>
         </div>
       ) : (
         /* 5. Empty / Initial State */
@@ -250,5 +389,3 @@ const InsightItem = ({ text, type }) => {
 };
 
 export default Analytics;
-
-

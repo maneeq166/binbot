@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   Image as ImageIcon,
@@ -19,6 +20,7 @@ import { createWasteRecord } from '../api/waste/index.js';
 import { wasteSchema } from '../validation/waste';
 
 const Classify = () => {
+  const [searchParams] = useSearchParams();
   const {
     register,
     setValue,
@@ -43,6 +45,17 @@ const Classify = () => {
   const [apiError, setApiError] = useState(null);
   const [resultId, setResultId] = useState(null);
   const [displayQuery, setDisplayQuery] = useState('');
+  const prefillQuery = searchParams.get('query');
+
+  useEffect(() => {
+    if (!prefillQuery) return;
+    setValue('mode', 'text');
+    setValue('query', prefillQuery, { shouldValidate: true });
+    setResult(null);
+    setApiError(null);
+    setResultId(null);
+    setDisplayQuery('');
+  }, [prefillQuery, setValue]);
 
   const classifyQuery = (value) => {
     const lowerQuery = value.toLowerCase();
