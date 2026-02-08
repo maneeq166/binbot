@@ -6,8 +6,10 @@ import Home from "./pages/Home";
 import Layout from "./helper/Layout";
 import Profile from "./pages/Profile";
 import Classify from "./pages/Classify";
+import History from "./pages/History";
 import PublicLayout from "./helper/PublicLayout";
 import { ToastContainer } from "react-toastify";
+import Analytics from "./pages/Analytics";
 
 export default function App() {
   return (
@@ -25,9 +27,8 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile/>}></Route>
           <Route path="/classify" element={<Classify/>}></Route>
-          {/* future routes */}
-          {/* <Route path="/history" element={<History />} /> */}
-          {/* <Route path="/analytics" element={<Analytics />} /> */}
+          <Route path="/history" element={<History/>}></Route>
+          <Route path="/analytics" element={<Analytics />} />
         </Route>
       </Routes>
 
