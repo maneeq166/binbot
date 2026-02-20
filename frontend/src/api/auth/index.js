@@ -29,7 +29,7 @@ export const login = async ({ email, password }) => {
 
     localStorage.setItem("token", token);
 
-    toast.success(`Logged in`);
+    // toast.success(`Logged in`);
 
     return res.data;
   } catch (error) {

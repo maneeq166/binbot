@@ -90,32 +90,32 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-[#0f172a]/95 border-b border-slate-800 backdrop-blur-sm">
+    <nav className="fixed top-0 w-full z-50 bg-[#070915]/85 backdrop-blur-xl border-b border-[#44356F]/40 shadow-[0_4px_30px_rgba(7,9,21,0.6)] transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           
           {/* Left: Logo */}
           <div className="flex-shrink-0">
-            <Link to="/dashboard" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 bg-emerald-500 rounded-lg flex items-center justify-center text-[#0f172a] transition-transform group-hover:scale-105">
+            <Link to="/dashboard" className="flex items-center gap-3 group">
+              <div className="h-9 w-9 bg-gradient-to-br from-[#674E98] to-[#44356F] rounded-xl flex items-center justify-center text-[#FAFAF9] shadow-[0_0_15px_rgba(103,78,152,0.4)] ring-1 ring-[#917FBA]/30 transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(145,127,186,0.6)] group-hover:scale-105 group-hover:-translate-y-[1px]">
                 <Recycle size={20} strokeWidth={2.5} />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">BinBot</span>
+              <span className="text-2xl font-extrabold text-[#FAFAF9] tracking-tight group-hover:drop-shadow-[0_0_8px_rgba(250,250,249,0.3)] transition-all duration-300">BinBot</span>
             </Link>
           </div>
 
           {/* Center: Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="flex items-baseline space-x-4">
+            <div className="flex items-baseline space-x-2">
               {navItems.map((item) => (
                 <NavLink
                   key={item.name}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    `flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ease-out ${
                       isActive
-                        ? 'bg-slate-800 text-white shadow-sm ring-1 ring-slate-700'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                        ? 'bg-gradient-to-r from-[#25233F] to-[#25233F]/60 text-[#FAFAF9] shadow-[inset_0_1px_1px_rgba(145,127,186,0.15),0_4px_12px_rgba(7,9,21,0.5)] ring-1 ring-[#44356F]/80'
+                        : 'text-[#ACA7B6] hover:text-[#FAFAF9] hover:bg-[#25233F]/40 hover:shadow-[0_4px_12px_rgba(7,9,21,0.3)] hover:-translate-y-[1px]'
                     }`
                   }
                 >
@@ -133,53 +133,53 @@ const Navigation = () => {
                 <div>
                   <button
                     onClick={toggleProfileDropdown}
-                    className="flex items-center max-w-xs text-sm bg-slate-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-emerald-500 pl-1 pr-3 py-1 border border-slate-700 hover:border-slate-600 transition-colors"
+                    className="flex items-center max-w-xs text-sm bg-[#25233F]/60 backdrop-blur-md rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#070915] focus:ring-[#917FBA]/50 pl-1.5 pr-4 py-1.5 border border-[#44356F]/60 hover:border-[#674E98]/80 hover:bg-[#25233F] hover:shadow-[0_0_20px_rgba(103,78,152,0.2)] hover:-translate-y-[1px] transition-all duration-300 ease-out"
                   >
-                    <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 mr-2">
-                      <User size={16} />
+                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#44356F] to-[#674E98] flex items-center justify-center text-[#FAFAF9] mr-2.5 shadow-inner ring-1 ring-[#917FBA]/20">
+                      <User size={15} strokeWidth={2.5} />
                     </div>
-                    <span className="text-slate-200 font-medium mr-1">{profileName}</span>
-                    <ChevronDown size={14} className={`text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                    <span className="text-[#FAFAF9] font-bold mr-1.5 tracking-wide">{profileName}</span>
+                    <ChevronDown size={14} className={`text-[#ACA7B6] transition-transform duration-300 ${isProfileOpen ? 'rotate-180 text-[#917FBA]' : ''}`} />
                   </button>
                 </div>
 
                 {/* Profile Dropdown */}
                 {isProfileOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-slate-700">
-                    <div className="py-1">
+                  <div className="origin-top-right absolute right-0 mt-3 w-56 rounded-2xl shadow-[0_10px_40px_rgba(7,9,21,0.8),0_0_20px_rgba(103,78,152,0.15)] bg-[#070915]/95 backdrop-blur-2xl ring-1 ring-[#674E98]/40 focus:outline-none z-50 border border-[#44356F]/60 overflow-hidden transform opacity-100 scale-100 transition-all duration-200">
+                    <div className="py-2">
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                        className="flex items-center px-5 py-2.5 text-sm font-medium text-[#ACA7B6] hover:bg-gradient-to-r hover:from-[#25233F]/80 hover:to-transparent hover:text-[#FAFAF9] transition-all duration-200"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <User size={16} className="mr-2" /> Profile
+                        <User size={16} className="mr-3 text-[#674E98]" /> Profile
                       </Link>
                       <Link
                         to="/settings"
-                        className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                        className="flex items-center px-5 py-2.5 text-sm font-medium text-[#ACA7B6] hover:bg-gradient-to-r hover:from-[#25233F]/80 hover:to-transparent hover:text-[#FAFAF9] transition-all duration-200"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <Settings size={16} className="mr-2" /> Settings
+                        <Settings size={16} className="mr-3 text-[#674E98]" /> Settings
                       </Link>
-                      <div className="border-t border-slate-700 my-1"></div>
+                      <div className="border-t border-[#44356F]/50 my-2"></div>
                       <button
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700/50 hover:text-red-300"
+                        className="flex w-full items-center px-5 py-2.5 text-sm font-medium text-[#D3B4D2] hover:bg-gradient-to-r hover:from-[#674E98]/20 hover:to-transparent hover:text-[#FAFAF9] transition-all duration-200"
                         onClick={handleLogout}
                       >
-                        <LogOut size={16} className="mr-2" /> Sign out
+                        <LogOut size={16} className="mr-3 text-[#D3B4D2]" /> Sign out
                       </button>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <Link to="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+              <div className="flex items-center gap-5">
+                <Link to="/login" className="text-sm font-semibold text-[#ACA7B6] hover:text-[#FAFAF9] hover:drop-shadow-[0_0_8px_rgba(250,250,249,0.3)] transition-all duration-300">
                   Log in
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-semibold bg-emerald-500 text-[#0f172a] px-4 py-2 rounded-lg hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20"
+                  className="text-sm font-bold bg-gradient-to-r from-[#674E98] to-[#917FBA] text-[#070915] px-6 py-2.5 rounded-xl hover:from-[#917FBA] hover:to-[#D3B4D2] transition-all duration-300 shadow-[0_0_20px_rgba(103,78,152,0.3)] hover:shadow-[0_0_30px_rgba(145,127,186,0.6)] hover:scale-[1.02] hover:-translate-y-[1px] ring-1 ring-[#FAFAF9]/10"
                 >
                   Get Started
                 </Link>
@@ -192,7 +192,7 @@ const Navigation = () => {
             <button
               onClick={toggleMobileMenu}
               type="button"
-              className="bg-slate-800 inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-emerald-500"
+              className="bg-[#25233F]/50 backdrop-blur-sm inline-flex items-center justify-center p-2.5 rounded-xl text-[#ACA7B6] border border-[#44356F]/50 hover:text-[#FAFAF9] hover:bg-[#25233F] hover:border-[#674E98] hover:shadow-[0_0_15px_rgba(103,78,152,0.2)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#070915] focus:ring-[#917FBA] transition-all duration-300"
             >
               <span className="sr-only">Open main menu</span>
               {isMobileMenuOpen ? (
@@ -207,68 +207,68 @@ const Navigation = () => {
 
       {/* Mobile Menu Panel */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-slate-900 border-b border-slate-800">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div className="md:hidden bg-[#070915]/95 backdrop-blur-2xl border-b border-[#44356F]/50 shadow-[0_20px_40px_rgba(7,9,21,0.8)]">
+          <div className="px-4 pt-4 pb-4 space-y-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium ${
+                  `flex items-center gap-4 px-4 py-3.5 rounded-xl text-base font-semibold transition-all duration-300 ${
                     isActive
-                      ? 'bg-slate-800 text-white border-l-4 border-emerald-500'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      ? 'bg-gradient-to-r from-[#25233F] to-[#25233F]/40 text-[#FAFAF9] border-l-4 border-[#917FBA] shadow-[inset_0_1px_1px_rgba(145,127,186,0.1)]'
+                      : 'text-[#ACA7B6] hover:text-[#FAFAF9] hover:bg-[#25233F]/50 hover:translate-x-1'
                   }`
                 }
               >
-                <item.icon size={20} />
+                <item.icon size={20} className={({ isActive }) => isActive ? "text-[#917FBA]" : "text-[#674E98]"} />
                 {item.name}
               </NavLink>
             ))}
           </div>
           {/* Mobile User Section */}
           {isLoggedIn ? (
-            <div className="pt-4 pb-4 border-t border-slate-800">
-              <div className="flex items-center px-5">
+            <div className="pt-5 pb-6 border-t border-[#44356F]/40 bg-[#070915]">
+              <div className="flex items-center px-6">
                 <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300">
-                    <User size={20} />
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#44356F] to-[#674E98] flex items-center justify-center text-[#FAFAF9] shadow-[0_4px_10px_rgba(7,9,21,0.5)] ring-2 ring-[#25233F]">
+                    <User size={24} strokeWidth={2.5} />
                   </div>
                 </div>
-                <div className="ml-3">
-                  <div className="text-base font-medium leading-none text-white">{profileName}</div>
-                  <div className="text-sm font-medium leading-none text-slate-400 mt-1">{profileEmail || " "}</div>
+                <div className="ml-4">
+                  <div className="text-lg font-bold leading-none text-[#FAFAF9] tracking-wide">{profileName}</div>
+                  <div className="text-sm font-medium leading-none text-[#ACA7B6] mt-2">{profileEmail || " "}</div>
                 </div>
               </div>
-              <div className="mt-3 px-2 space-y-1">
+              <div className="mt-5 px-4 space-y-2">
                 <Link
                   to="/profile"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold text-[#ACA7B6] hover:text-[#FAFAF9] hover:bg-[#25233F]/50 hover:translate-x-1 transition-all duration-300"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Your Profile
+                  <User size={18} className="text-[#674E98]" /> Your Profile
                 </Link>
                 <button
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800"
+                  className="flex w-full items-center gap-3 text-left px-4 py-3 rounded-xl text-base font-semibold text-[#D3B4D2] hover:text-[#FAFAF9] hover:bg-[#674E98]/20 hover:translate-x-1 transition-all duration-300"
                   onClick={handleLogout}
                 >
-                  Sign out
+                  <LogOut size={18} className="text-[#D3B4D2]" /> Sign out
                 </button>
               </div>
             </div>
           ) : (
-            <div className="pt-4 pb-4 border-t border-slate-800 px-4">
+            <div className="pt-5 pb-6 border-t border-[#44356F]/40 px-6 space-y-3 bg-[#070915]">
               <Link
                 to="/login"
-                className="block w-full text-center px-4 py-2 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800"
+                className="flex items-center justify-center w-full px-4 py-3.5 rounded-xl text-base font-bold text-[#ACA7B6] bg-[#25233F]/30 border border-[#44356F]/50 hover:text-[#FAFAF9] hover:bg-[#25233F] hover:border-[#674E98]/50 transition-all duration-300"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Log in
               </Link>
               <Link
                 to="/register"
-                className="mt-2 block w-full text-center px-4 py-2 rounded-md text-base font-semibold text-[#0f172a] bg-emerald-500 hover:bg-emerald-400"
+                className="flex items-center justify-center w-full px-4 py-3.5 rounded-xl text-base font-bold text-[#070915] bg-gradient-to-r from-[#674E98] to-[#917FBA] hover:from-[#917FBA] hover:to-[#D3B4D2] shadow-[0_4px_20px_rgba(103,78,152,0.3)] hover:shadow-[0_4px_25px_rgba(145,127,186,0.5)] hover:-translate-y-[1px] transition-all duration-300 ring-1 ring-[#FAFAF9]/10"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Get Started

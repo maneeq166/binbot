@@ -132,21 +132,21 @@ const History = () => {
   const getBinStyles = (bin) => {
     switch (bin) {
       case 'Green Bin':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        return 'bg-[#917FBA]/15 text-[#D3B4D2] border-[#917FBA]/30 shadow-[0_0_15px_rgba(145,127,186,0.15)]';
       case 'Blue Bin':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-[#674E98]/15 text-[#917FBA] border-[#674E98]/30 shadow-[0_0_15px_rgba(103,78,152,0.15)]';
       case 'Black Bin':
-        return 'bg-slate-700/50 text-slate-300 border-slate-600/50';
+        return 'bg-[#25233F]/80 text-[#ACA7B6] border-[#44356F]/60 shadow-[0_0_15px_rgba(37,35,63,0.3)]';
       default:
-        return 'bg-slate-800 text-slate-400 border-slate-700';
+        return 'bg-[#25233F]/50 text-[#ACA7B6] border-[#44356F]/40';
     }
   };
 
   const getIcon = (bin) => {
     switch (bin) {
-      case 'Green Bin': return <Leaf size={14} />;
-      case 'Blue Bin': return <Recycle size={14} />;
-      default: return <Trash2 size={14} />;
+      case 'Green Bin': return <Leaf size={14} className="text-[#D3B4D2]" />;
+      case 'Blue Bin': return <Recycle size={14} className="text-[#917FBA]" />;
+      default: return <Trash2 size={14} className="text-[#ACA7B6]" />;
     }
   };
 
@@ -186,240 +186,252 @@ const History = () => {
   const hasClipboard = typeof navigator !== 'undefined' && Boolean(navigator.clipboard?.writeText);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="relative min-h-[calc(100vh-80px)] w-full overflow-hidden bg-[#070915] font-sans">
       
-      {/* 1. Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">History</h1>
-          <p className="mt-1 text-slate-400">Review your past waste classifications.</p>
-        </div>
-        
-        {/* Optional Action Bar (Visual Only) */}
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
-            <Filter size={16} />
-            <span className="hidden sm:inline">Filter</span>
-          </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
-            <Download size={16} />
-            <span className="hidden sm:inline">Export</span>
-          </button>
-        </div>
+      {/* Premium Atmospheric Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-5%] right-[15%] w-[500px] h-[500px] bg-[#674E98]/10 blur-[130px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] left-[5%] w-[600px] h-[600px] bg-[#917FBA]/5 blur-[150px] rounded-full mix-blend-screen" />
       </div>
 
-      {/* 2. Main History Content */}
-      <div className="bg-slate-800/50 border border-slate-800 rounded-xl shadow-sm overflow-hidden backdrop-blur-sm">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="bg-slate-900/50 p-4 rounded-full mb-4 border border-slate-800">
-              <Clock size={28} className="text-slate-500 animate-pulse" />
-            </div>
-            <h3 className="text-lg font-medium text-white mb-1">Loading history</h3>
-            <p className="text-slate-400 max-w-sm text-sm">
-              Fetching your latest waste classifications.
-            </p>
+        {/* 1. Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-extrabold text-[#FAFAF9] tracking-tight drop-shadow-sm">History</h1>
+            <p className="mt-2 text-[#ACA7B6] font-medium text-lg">Review your past waste classifications.</p>
           </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="bg-rose-500/10 p-4 rounded-full mb-4 border border-rose-500/20">
-              <Trash2 size={28} className="text-rose-400" />
-            </div>
-            <h3 className="text-lg font-medium text-white mb-1">Unable to load history</h3>
-            <p className="text-slate-400 max-w-sm text-sm mb-6">{error}</p>
-            <button
-              type="button"
-              onClick={fetchHistory}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-slate-700 transition-colors"
-            >
-              Try Again
+          
+          {/* Optional Action Bar (Visual Only) */}
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2.5 px-4 py-2.5 bg-[#25233F]/60 backdrop-blur-md border border-[#44356F]/60 rounded-xl text-sm font-semibold text-[#ACA7B6] hover:text-[#FAFAF9] hover:bg-[#25233F] hover:border-[#674E98]/50 hover:shadow-[0_4px_15px_rgba(103,78,152,0.2)] transition-all duration-300">
+              <Filter size={18} />
+              <span className="hidden sm:inline">Filter</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 bg-[#25233F]/60 backdrop-blur-md border border-[#44356F]/60 rounded-xl text-sm font-semibold text-[#ACA7B6] hover:text-[#FAFAF9] hover:bg-[#25233F] hover:border-[#674E98]/50 hover:shadow-[0_4px_15px_rgba(103,78,152,0.2)] transition-all duration-300">
+              <Download size={18} />
+              <span className="hidden sm:inline">Export</span>
             </button>
           </div>
-        ) : historyItems.length > 0 ? (
-          <>
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-900/50 border-b border-slate-700/50">
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Item Name</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Classification</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Bin Type</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Date & Time</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {historyItems.map((item) => (
-                    <tr key={item.id} className="group hover:bg-slate-800/80 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className="font-medium text-white">{item.item}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-slate-300">{item.type}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getBinStyles(item.bin)}`}>
-                          {getIcon(item.bin)}
-                          {item.bin}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm text-slate-300">{item.date || '--'}</span>
-                          <span className="text-xs text-slate-500">{item.time || '--'}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="relative inline-flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => toggleMenu(item.id)}
-                            className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-700 transition-colors"
-                            aria-haspopup="menu"
-                            aria-expanded={activeMenuId === item.id}
-                          >
-                            <MoreHorizontal size={16} />
-                          </button>
-                          {activeMenuId === item.id && (
-                            <div className="absolute right-0 top-8 z-10 w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-lg backdrop-blur-sm p-1 text-left">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleReclassify(item);
-                                  setActiveMenuId(null);
-                                }}
-                                className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors"
-                              >
-                                Reclassify item
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyItem(item)}
-                                disabled={!hasClipboard || !item.item}
-                                className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors disabled:text-slate-500 disabled:hover:bg-transparent"
-                              >
-                                {copiedId === item.id ? 'Copied' : 'Copy item name'}
-                              </button>
-                              {!hasClipboard && (
-                                <div className="px-3 pb-2 text-[11px] text-slate-500">
-                                  Clipboard not available
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        </div>
 
-            {/* Mobile Card View */}
-            <div className="md:hidden divide-y divide-slate-800">
-              {historyItems.map((item) => (
-                <div key={item.id} className="p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium text-white">{item.item}</h3>
-                      <p className="text-sm text-slate-400">{item.type}</p>
-                    </div>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => toggleMenu(item.id)}
-                        className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-700 transition-colors"
-                        aria-haspopup="menu"
-                        aria-expanded={activeMenuId === item.id}
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
-                      {activeMenuId === item.id && (
-                        <div className="absolute right-0 top-8 z-10 w-48 rounded-lg border border-slate-700 bg-slate-900/95 shadow-lg backdrop-blur-sm p-1 text-left">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleReclassify(item);
-                              setActiveMenuId(null);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors"
-                          >
-                            Reclassify item
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyItem(item)}
-                            disabled={!hasClipboard || !item.item}
-                            className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-md transition-colors disabled:text-slate-500 disabled:hover:bg-transparent"
-                          >
-                            {copiedId === item.id ? 'Copied' : 'Copy item name'}
-                          </button>
-                          {!hasClipboard && (
-                            <div className="px-3 pb-2 text-[11px] text-slate-500">
-                              Clipboard not available
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-2">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getBinStyles(item.bin)}`}>
-                      {getIcon(item.bin)}
-                      {item.bin}
-                    </span>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                      <Calendar size={12} />
-                      <span>{item.date || '--'}</span>
-                      <span className="text-slate-600">|</span>
-                      <span>{item.time || '--'}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Pagination Footer (Visual Only) */}
-            <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/30 flex items-center justify-between">
-              <span className="text-sm text-slate-500">Showing {historyItems.length} of {totalResults} results</span>
-              <div className="flex gap-2">
-                <button
-                  className="px-3 py-1 text-sm text-slate-400 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-50"
-                  disabled={!canGoPrev}
-                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                  type="button"
-                >
-                  Previous
-                </button>
-                <button
-                  className="px-3 py-1 text-sm text-slate-400 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-50"
-                  disabled={!canGoNext}
-                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                  type="button"
-                >
-                  Next
-                </button>
+        {/* 2. Main History Content */}
+        <div className="bg-[#25233F]/40 border border-[#44356F]/50 rounded-3xl shadow-[0_12px_40px_rgba(7,9,21,0.6)] overflow-hidden backdrop-blur-xl ring-1 ring-[#FAFAF9]/5 transition-all duration-300">
+          
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+              <div className="bg-[#25233F]/60 p-5 rounded-2xl mb-6 border border-[#44356F]/60 shadow-inner">
+                <Clock size={36} className="text-[#917FBA] animate-pulse" />
               </div>
+              <h3 className="text-xl font-bold text-[#FAFAF9] mb-2 tracking-tight">Loading history</h3>
+              <p className="text-[#ACA7B6] max-w-sm text-base font-medium">
+                Fetching your latest waste classifications.
+              </p>
             </div>
-          </>
-        ) : showEmptyState ? (
-          /* 3. Empty State */
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="bg-slate-900/50 p-4 rounded-full mb-4 border border-slate-800">
-              <Clock size={32} className="text-slate-500" />
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+              <div className="bg-[#D3B4D2]/10 p-5 rounded-2xl mb-6 border border-[#D3B4D2]/20 shadow-[0_0_30px_rgba(211,180,210,0.15)]">
+                <Trash2 size={36} className="text-[#D3B4D2]" />
+              </div>
+              <h3 className="text-xl font-bold text-[#FAFAF9] mb-2 tracking-tight">Unable to load history</h3>
+              <p className="text-[#ACA7B6] max-w-sm text-base font-medium mb-8">{error}</p>
+              <button
+                type="button"
+                onClick={fetchHistory}
+                className="px-8 py-3 bg-[#25233F] border border-[#44356F] rounded-xl text-sm font-bold text-[#FAFAF9] hover:bg-[#44356F] hover:border-[#674E98] transition-all duration-300 shadow-md hover:shadow-lg"
+              >
+                Try Again
+              </button>
             </div>
-            <h3 className="text-lg font-medium text-white mb-1">No waste classifications yet</h3>
-            <p className="text-slate-400 max-w-sm text-sm mb-6">
-              Start classifying items to build your history and track your environmental impact.
-            </p>
-            <a href="/classify" className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-[#0f172a] font-medium rounded-lg transition-colors text-sm">
-              Classify Your First Item
-            </a>
-          </div>
-        ) : null}
+          ) : historyItems.length > 0 ? (
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-[#070915]/60 border-b border-[#44356F]/60 backdrop-blur-md">
+                      <th className="px-8 py-5 text-xs font-bold text-[#ACA7B6] uppercase tracking-widest">Item Name</th>
+                      <th className="px-8 py-5 text-xs font-bold text-[#ACA7B6] uppercase tracking-widest">Classification</th>
+                      <th className="px-8 py-5 text-xs font-bold text-[#ACA7B6] uppercase tracking-widest">Bin Type</th>
+                      <th className="px-8 py-5 text-xs font-bold text-[#ACA7B6] uppercase tracking-widest">Date & Time</th>
+                      <th className="px-8 py-5 text-xs font-bold text-[#ACA7B6] uppercase tracking-widest text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#44356F]/40">
+                    {historyItems.map((item) => (
+                      <tr key={item.id} className="group hover:bg-[#674E98]/10 transition-colors duration-200">
+                        <td className="px-8 py-5">
+                          <span className="font-semibold text-[#FAFAF9] text-[15px]">{item.item}</span>
+                        </td>
+                        <td className="px-8 py-5">
+                          <span className="text-[15px] font-medium text-[#ACA7B6] group-hover:text-[#FAFAF9] transition-colors">{item.type}</span>
+                        </td>
+                        <td className="px-8 py-5">
+                          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border tracking-wide ${getBinStyles(item.bin)}`}>
+                            {getIcon(item.bin)}
+                            {item.bin}
+                          </span>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[15px] font-medium text-[#ACA7B6] group-hover:text-[#FAFAF9] transition-colors">{item.date || '--'}</span>
+                            <span className="text-xs font-medium text-[#44356F] group-hover:text-[#917FBA] transition-colors">{item.time || '--'}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 text-right">
+                          <div className="relative inline-flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => toggleMenu(item.id)}
+                              className="text-[#ACA7B6] hover:text-[#FAFAF9] p-2 rounded-lg hover:bg-[#25233F] transition-colors focus:outline-none focus:ring-2 focus:ring-[#917FBA]/50"
+                              aria-haspopup="menu"
+                              aria-expanded={activeMenuId === item.id}
+                            >
+                              <MoreHorizontal size={20} />
+                            </button>
+                            {activeMenuId === item.id && (
+                              <div className="absolute right-0 top-10 z-20 w-48 rounded-xl border border-[#44356F]/80 bg-[#070915]/95 shadow-[0_10px_40px_rgba(7,9,21,0.8)] backdrop-blur-xl p-1.5 text-left ring-1 ring-[#FAFAF9]/5 animate-in fade-in zoom-in-95 duration-200">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleReclassify(item);
+                                    setActiveMenuId(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 text-sm font-medium text-[#FAFAF9] hover:bg-[#25233F] hover:text-[#917FBA] rounded-lg transition-colors"
+                                >
+                                  Reclassify item
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyItem(item)}
+                                  disabled={!hasClipboard || !item.item}
+                                  className="w-full text-left px-4 py-2.5 text-sm font-medium text-[#FAFAF9] hover:bg-[#25233F] hover:text-[#917FBA] rounded-lg transition-colors disabled:text-[#44356F] disabled:hover:bg-transparent"
+                                >
+                                  {copiedId === item.id ? 'Copied!' : 'Copy item name'}
+                                </button>
+                                {!hasClipboard && (
+                                  <div className="px-4 pb-2 pt-1 text-xs text-[#44356F] font-medium">
+                                    Clipboard not available
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden divide-y divide-[#44356F]/40">
+                {historyItems.map((item) => (
+                  <div key={item.id} className="p-6 space-y-4 hover:bg-[#674E98]/5 transition-colors duration-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-[#FAFAF9] text-lg mb-1 tracking-tight">{item.item}</h3>
+                        <p className="text-sm font-medium text-[#ACA7B6]">{item.type}</p>
+                      </div>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => toggleMenu(item.id)}
+                          className="text-[#ACA7B6] hover:text-[#FAFAF9] p-2 rounded-lg hover:bg-[#25233F] transition-colors"
+                          aria-haspopup="menu"
+                          aria-expanded={activeMenuId === item.id}
+                        >
+                          <MoreHorizontal size={20} />
+                        </button>
+                        {activeMenuId === item.id && (
+                          <div className="absolute right-0 top-10 z-20 w-48 rounded-xl border border-[#44356F]/80 bg-[#070915]/95 shadow-[0_10px_40px_rgba(7,9,21,0.8)] backdrop-blur-xl p-1.5 text-left ring-1 ring-[#FAFAF9]/5 animate-in fade-in zoom-in-95 duration-200">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleReclassify(item);
+                                setActiveMenuId(null);
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-medium text-[#FAFAF9] hover:bg-[#25233F] hover:text-[#917FBA] rounded-lg transition-colors"
+                            >
+                              Reclassify item
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyItem(item)}
+                              disabled={!hasClipboard || !item.item}
+                              className="w-full text-left px-4 py-2.5 text-sm font-medium text-[#FAFAF9] hover:bg-[#25233F] hover:text-[#917FBA] rounded-lg transition-colors disabled:text-[#44356F] disabled:hover:bg-transparent"
+                            >
+                              {copiedId === item.id ? 'Copied!' : 'Copy item name'}
+                            </button>
+                            {!hasClipboard && (
+                              <div className="px-4 pb-2 pt-1 text-xs text-[#44356F] font-medium">
+                                Clipboard not available
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#44356F]/30">
+                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase border ${getBinStyles(item.bin)}`}>
+                        {getIcon(item.bin)}
+                        {item.bin}
+                      </span>
+                      <div className="flex items-center gap-2 text-xs font-medium text-[#ACA7B6]">
+                        <Calendar size={14} className="text-[#674E98]" />
+                        <span>{item.date || '--'}</span>
+                        <span className="text-[#44356F]">|</span>
+                        <span>{item.time || '--'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Pagination Footer */}
+              <div className="px-8 py-5 border-t border-[#44356F]/60 bg-[#070915]/60 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                <span className="text-sm font-medium text-[#ACA7B6]">Showing <span className="text-[#FAFAF9] font-bold">{historyItems.length}</span> of <span className="text-[#FAFAF9] font-bold">{totalResults}</span> results</span>
+                <div className="flex gap-3">
+                  <button
+                    className="px-5 py-2 text-sm font-bold text-[#FAFAF9] bg-[#25233F] border border-[#44356F] rounded-xl hover:bg-[#44356F] hover:border-[#674E98] disabled:opacity-40 disabled:hover:bg-[#25233F] disabled:hover:border-[#44356F] disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
+                    disabled={!canGoPrev}
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    type="button"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="px-5 py-2 text-sm font-bold text-[#FAFAF9] bg-[#25233F] border border-[#44356F] rounded-xl hover:bg-[#44356F] hover:border-[#674E98] disabled:opacity-40 disabled:hover:bg-[#25233F] disabled:hover:border-[#44356F] disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
+                    disabled={!canGoNext}
+                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                    type="button"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : showEmptyState ? (
+            /* 3. Empty State */
+            <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+              <div className="bg-[#25233F]/40 p-5 rounded-2xl mb-6 border border-[#44356F]/50 shadow-[0_0_20px_rgba(103,78,152,0.15)]">
+                <Clock size={36} className="text-[#674E98]" />
+              </div>
+              <h3 className="text-xl font-bold text-[#FAFAF9] mb-3 tracking-tight">No classifications yet</h3>
+              <p className="text-[#ACA7B6] max-w-sm text-base font-medium mb-8 leading-relaxed">
+                Start classifying items to build your history and track your environmental impact over time.
+              </p>
+              <a 
+                href="/classify" 
+                className="px-8 py-3.5 bg-gradient-to-r from-[#674E98] to-[#917FBA] text-[#070915] font-bold rounded-xl hover:from-[#917FBA] hover:to-[#D3B4D2] transition-all duration-300 shadow-[0_8px_20px_rgba(103,78,152,0.3)] hover:shadow-[0_8px_25px_rgba(145,127,186,0.5)] transform hover:-translate-y-0.5"
+              >
+                Classify Your First Item
+              </a>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

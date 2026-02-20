@@ -18,7 +18,6 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-
   const auth = ()=>{
     if(!localStorage.getItem("token")){
       toast.info("Please login!")
@@ -76,56 +75,65 @@ const Dashboard = () => {
   }, [dashboardData]);
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans pt-16">
+    <div className="min-h-screen bg-[#070915] text-[#FAFAF9] font-sans pt-16 relative overflow-hidden">
+
+      {/* Atmospheric Background Layers */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#674E98]/15 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#917FBA]/10 blur-[100px] rounded-full mix-blend-screen" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#D3B4D2]/5 blur-[150px] rounded-full" />
+      </div>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 via-slate-800 to-emerald-900/20 border border-slate-800 shadow-lg">
-          <div className="relative z-10 p-8 sm:p-10">
-            <h1 className="text-3xl font-bold text-white mb-2">
+        <div className="relative overflow-hidden rounded-3xl bg-[#25233F]/60 backdrop-blur-xl border border-[#44356F]/60 shadow-[0_8px_40px_rgba(7,9,21,0.6)] group">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#674E98]/10 to-transparent pointer-events-none" />
+          
+          <div className="relative z-10 p-8 sm:p-12">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#FAFAF9] tracking-tight mb-3 drop-shadow-sm">
               Welcome back, Alex!
             </h1>
-            <p className="text-slate-400 max-w-xl text-lg mb-8">
-              You've diverted <span className="text-emerald-400 font-semibold">{stats.divertedKg}kg</span> of waste from landfills this month.
+            <p className="text-[#ACA7B6] max-w-xl text-lg mb-10 font-medium">
+              You've diverted <span className="text-[#917FBA] font-bold drop-shadow-sm">{stats.divertedKg}kg</span> of waste from landfills this month.
             </p>
             <button
               onClick={() => nav("/classify")}
-              className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#0f172a] font-semibold py-3 px-6 rounded-lg transition-all shadow-md shadow-emerald-900/20 hover:shadow-emerald-900/40"
+              className="flex items-center gap-2.5 bg-gradient-to-r from-[#674E98] to-[#917FBA] hover:from-[#917FBA] hover:to-[#D3B4D2] text-[#070915] font-bold py-3.5 px-8 rounded-xl transition-all duration-300 shadow-[0_8px_20px_rgba(103,78,152,0.3)] hover:shadow-[0_8px_25px_rgba(145,127,186,0.5)] transform hover:-translate-y-0.5 hover:scale-[1.02] ring-1 ring-[#FAFAF9]/10"
             >
-              <ScanLine size={20} />
+              <ScanLine size={20} strokeWidth={2.5} />
               Classify Waste Now
             </button>
           </div>
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-emerald-500/5 to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-[#917FBA]/10 to-transparent pointer-events-none" />
         </div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Items Analyzed"
             value={stats.totalItems.toLocaleString()}
             trend={isLoading ? "Loading..." : "+12% vs last month"}
-            icon={<Activity size={20} className="text-blue-400" />}
+            icon={<Activity size={22} className="text-[#917FBA]" />}
           />
           <StatCard
             title="Biodegradable"
             value={stats.biodegradableCount.toLocaleString()}
             sub={`${stats.biodegradablePct}% of total`}
-            icon={<Leaf size={20} className="text-emerald-400" />}
+            icon={<Leaf size={22} className="text-[#D3B4D2]" />}
           />
           <StatCard
             title="Non-Biodegradable"
             value={stats.nonBiodegradableCount.toLocaleString()}
             sub={`${stats.nonBiodegradablePct}% of total`}
-            icon={<Trash2 size={20} className="text-amber-400" />}
+            icon={<Trash2 size={22} className="text-[#ACA7B6]" />}
           />
           <StatCard
             title="Bin Accuracy"
             value="98.5%"
             trend={isLoading ? "Loading..." : "Top tier performance"}
-            icon={<TrendingUp size={20} className="text-purple-400" />}
+            icon={<TrendingUp size={22} className="text-[#917FBA]" />}
           />
         </div>
 
@@ -133,9 +141,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-slate-800/50 border border-slate-800 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
+          <div className="lg:col-span-2 bg-[#25233F]/40 backdrop-blur-xl border border-[#44356F]/50 rounded-3xl p-8 shadow-[0_8px_30px_rgba(7,9,21,0.5)] transition-all duration-300 hover:border-[#674E98]/40 hover:shadow-[0_8px_40px_rgba(103,78,152,0.15)]">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-extrabold text-[#FAFAF9] tracking-tight">Recent Activity</h3>
             </div>
             
             <div className="space-y-4">
@@ -158,18 +166,18 @@ const Dashboard = () => {
           </div>
 
           {/* Tips */}
-          <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-6 shadow-sm flex flex-col">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <AlertCircle size={18} className="text-emerald-500" />
+          <div className="bg-[#25233F]/40 backdrop-blur-xl border border-[#44356F]/50 rounded-3xl p-8 shadow-[0_8px_30px_rgba(7,9,21,0.5)] flex flex-col hover:border-[#674E98]/40 transition-all duration-300">
+            <h3 className="text-xl font-extrabold text-[#FAFAF9] tracking-tight mb-8 flex items-center gap-3">
+              <AlertCircle size={22} className="text-[#917FBA]" />
               Segregation Tips
             </h3>
             
             <div className="flex-1 space-y-4">
-              <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-800">
-                <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">
+              <div className="p-6 rounded-2xl bg-[#070915]/50 border border-[#44356F]/40 shadow-inner group hover:border-[#674E98]/50 transition-colors duration-300">
+                <div className="inline-block text-[11px] font-extrabold text-[#D3B4D2] uppercase tracking-widest bg-[#674E98]/20 px-3 py-1.5 rounded-full border border-[#674E98]/30 mb-4">
                   Tip of the day
-                </span>
-                <p className="text-slate-300 mt-2 text-sm">
+                </div>
+                <p className="text-[#ACA7B6] mt-1 text-[15px] font-medium leading-relaxed">
                   Always rinse plastic containers before placing them in the blue bin.
                 </p>
               </div>
@@ -185,35 +193,42 @@ const Dashboard = () => {
 /* Helper Components */
 
 const StatCard = ({ title, value, sub, trend, icon }) => (
-  <div className="bg-slate-800/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
-        {icon}
+  <div className="bg-[#25233F]/40 backdrop-blur-xl border border-[#44356F]/50 p-6 rounded-3xl hover:bg-[#25233F]/60 hover:border-[#674E98]/60 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(7,9,21,0.6)] transition-all duration-300 relative overflow-hidden group">
+    <div className="absolute top-0 right-0 w-32 h-32 bg-[#674E98]/5 rounded-full blur-2xl group-hover:bg-[#674E98]/10 transition-colors pointer-events-none" />
+    <div className="relative z-10">
+      <div className="flex justify-between items-start mb-6">
+        <div className="p-3 bg-[#070915]/50 rounded-2xl border border-[#44356F]/60 shadow-inner group-hover:border-[#917FBA]/40 transition-colors">
+          {icon}
+        </div>
+        {trend && (
+          <span className="text-[11px] font-bold tracking-wide text-[#917FBA] bg-[#674E98]/20 px-3 py-1.5 rounded-full border border-[#674E98]/30">
+            {trend}
+          </span>
+        )}
       </div>
-      {trend && (
-        <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/10">
-          {trend}
-        </span>
-      )}
+      <div>
+        <h3 className="text-[#ACA7B6] text-sm font-semibold tracking-wide mb-1.5">{title}</h3>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-extrabold text-[#FAFAF9] tracking-tight">{value}</span>
+        </div>
+        {sub && <p className="text-xs font-medium text-[#ACA7B6]/80 mt-2">{sub}</p>}
+      </div>
     </div>
-    <h3 className="text-slate-400 text-sm">{title}</h3>
-    <span className="text-2xl font-bold text-white">{value}</span>
-    {sub && <p className="text-xs text-slate-500">{sub}</p>}
   </div>
 );
 
 const ActivityItem = ({ desc, time, status }) => (
-  <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-lg border border-slate-800/50">
+  <div className="flex items-center justify-between p-4 sm:p-5 bg-[#070915]/40 rounded-2xl border border-[#44356F]/40 hover:-translate-y-0.5 hover:border-[#674E98]/60 hover:bg-[#25233F]/40 hover:shadow-[0_8px_20px_rgba(7,9,21,0.4)] transition-all duration-300 group">
     <div className="flex items-center gap-4">
-      <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-        <Recycle size={18} />
+      <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-[#25233F] border border-[#44356F] text-[#917FBA] shadow-inner group-hover:border-[#917FBA]/40 group-hover:text-[#D3B4D2] transition-colors">
+        <Recycle size={20} strokeWidth={2.5} />
       </div>
       <div>
-        <p className="text-sm font-medium">{desc}</p>
-        <p className="text-xs text-slate-500">{time}</p>
+        <p className="text-[15px] font-semibold text-[#FAFAF9] group-hover:text-[#D3B4D2] transition-colors">{desc}</p>
+        <p className="text-xs font-medium text-[#ACA7B6] mt-1">{time}</p>
       </div>
     </div>
-    <span className="text-xs text-emerald-400 border border-emerald-400/10 px-2 py-1 rounded-full">
+    <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#D3B4D2] border border-[#674E98]/40 bg-[#674E98]/20 px-3 py-1.5 rounded-full shadow-sm">
       {status}
     </span>
   </div>

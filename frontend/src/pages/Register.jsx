@@ -40,99 +40,109 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4 text-slate-200">
-      <div className="w-full max-w-md bg-slate-800/50 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-sm">
+    <div className="min-h-screen bg-[#070915] flex items-center justify-center p-4 text-[#FAFAF9] relative overflow-hidden">
+      
+      {/* 1. Page Background - Premium Atmosphere */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#674E98]/10 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#917FBA]/10 blur-[100px] rounded-full mix-blend-screen" />
+      </div>
 
-        {/* Header */}
-        <div className="p-8 text-center border-b border-slate-800/50">
-          <div className="mb-4 flex justify-center items-center gap-2">
-            <div className="h-8 w-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-              <Recycle size={20} strokeWidth={2.5} />
+      {/* 2. Register Card - Glass Morphism Premium Panel */}
+      <div className="relative w-full max-w-md bg-[#25233F]/60 border border-[#44356F]/60 rounded-3xl shadow-[0_20px_60px_rgba(7,9,21,0.8)] backdrop-blur-xl ring-1 ring-[#FAFAF9]/5 overflow-hidden">
+        
+        <div className="absolute inset-0 bg-gradient-to-b from-[#674E98]/5 to-transparent pointer-events-none" />
+
+        {/* 3. Logo Area - Brand Identity Enhancement */}
+        <div className="p-8 pb-6 text-center border-b border-[#44356F]/40 relative z-10">
+          <div className="mb-5 flex justify-center items-center gap-3">
+            <div className="h-10 w-10 bg-gradient-to-br from-[#674E98] to-[#44356F] rounded-xl flex items-center justify-center text-[#FAFAF9] shadow-[0_0_15px_rgba(103,78,152,0.4)] ring-1 ring-[#917FBA]/30 hover:scale-105 transition-transform duration-300">
+              <Recycle size={22} strokeWidth={2.5} />
             </div>
-            <span className="text-xl font-bold text-white">BinBot</span>
+            <span className="text-2xl font-extrabold text-[#FAFAF9] tracking-tight drop-shadow-sm">BinBot</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-white">
+          <h2 className="text-2xl font-bold text-[#FAFAF9] tracking-tight">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm font-medium text-[#ACA7B6]">
             Smart waste segregation starts here.
           </p>
         </div>
 
         {/* Form */}
-        <div className="p-8 pt-6">
+        <div className="p-8 pt-6 relative z-10">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             {/* Username */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Username</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-[#917FBA] mb-1.5 ml-1 transition-colors group-focus-within:text-[#D3B4D2]">Username</label>
               <input
                 type="text"
                 {...register("username")}
                 autoComplete="username"
                 placeholder="johndoe"
                 aria-invalid={Boolean(errors.username)}
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
+                className="w-full px-4 py-3 bg-[#070915]/50 border border-[#44356F] rounded-xl outline-none text-[#FAFAF9] placeholder:text-[#ACA7B6]/60 transition-all duration-300 focus:ring-2 focus:ring-[#674E98]/40 focus:border-[#917FBA] hover:border-[#674E98] shadow-inner"
               />
               {errors.username && (
-                <p className="text-sm text-red-400 mt-1">
+                <p className="text-[13px] font-medium text-[#D3B4D2] mt-1.5 ml-1">
                   {errors.username.message}
                 </p>
               )}
             </div>
 
             {/* Email */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-[#917FBA] mb-1.5 ml-1 transition-colors group-focus-within:text-[#D3B4D2]">Email</label>
               <input
                 type="email"
                 {...register("email")}
                 autoComplete="email"
                 placeholder="name@company.com"
                 aria-invalid={Boolean(errors.email)}
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
+                className="w-full px-4 py-3 bg-[#070915]/50 border border-[#44356F] rounded-xl outline-none text-[#FAFAF9] placeholder:text-[#ACA7B6]/60 transition-all duration-300 focus:ring-2 focus:ring-[#674E98]/40 focus:border-[#917FBA] hover:border-[#674E98] shadow-inner"
               />
               {errors.email && (
-                <p className="text-sm text-red-400 mt-1">
+                <p className="text-[13px] font-medium text-[#D3B4D2] mt-1.5 ml-1">
                   {errors.email.message}
                 </p>
               )}
             </div>
 
             {/* Password */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-[#917FBA] mb-1.5 ml-1 transition-colors group-focus-within:text-[#D3B4D2]">Password</label>
               <input
                 type="password"
                 {...register("password")}
                 autoComplete="new-password"
-                placeholder="********"
+                placeholder="••••••••"
                 aria-invalid={Boolean(errors.password)}
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
+                className="w-full px-4 py-3 bg-[#070915]/50 border border-[#44356F] rounded-xl outline-none text-[#FAFAF9] placeholder:text-[#ACA7B6]/60 transition-all duration-300 focus:ring-2 focus:ring-[#674E98]/40 focus:border-[#917FBA] hover:border-[#674E98] shadow-inner tracking-widest"
               />
               {errors.password && (
-                <p className="text-sm text-red-400 mt-1">
+                <p className="text-[13px] font-medium text-[#D3B4D2] mt-1.5 ml-1">
                   {errors.password.message}
                 </p>
               )}
             </div>
 
             {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="group">
+              <label className="block text-sm font-semibold text-[#917FBA] mb-1.5 ml-1 transition-colors group-focus-within:text-[#D3B4D2]">
                 Confirm Password
               </label>
               <input
                 type="password"
                 {...register("confirmPassword")}
                 autoComplete="new-password"
-                placeholder="********"
+                placeholder="••••••••"
                 aria-invalid={Boolean(errors.confirmPassword)}
-                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none placeholder:text-slate-500 transition focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 hover:border-slate-600"
+                className="w-full px-4 py-3 bg-[#070915]/50 border border-[#44356F] rounded-xl outline-none text-[#FAFAF9] placeholder:text-[#ACA7B6]/60 transition-all duration-300 focus:ring-2 focus:ring-[#674E98]/40 focus:border-[#917FBA] hover:border-[#674E98] shadow-inner tracking-widest"
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-red-400 mt-1">
+                <p className="text-[13px] font-medium text-[#D3B4D2] mt-1.5 ml-1">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -143,18 +153,18 @@ const Register = () => {
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              className="w-full py-2.5 rounded-lg font-semibold text-[#0f172a] bg-emerald-500 transition active:scale-[0.99] hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full mt-2 py-3.5 rounded-xl font-bold text-[15px] text-[#070915] bg-gradient-to-r from-[#674E98] to-[#917FBA] transition-all duration-300 ease-out active:scale-[0.98] hover:from-[#917FBA] hover:to-[#D3B4D2] hover:shadow-[0_0_25px_rgba(145,127,186,0.4)] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ring-1 ring-[#FAFAF9]/10"
             >
               {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
 
           {/* Footer */}
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-8 text-center text-sm font-medium text-[#ACA7B6]">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-emerald-500 hover:text-emerald-400"
+              className="text-[#917FBA] hover:text-[#D3B4D2] transition-colors duration-200 font-bold ml-1 hover:underline underline-offset-4"
             >
               Log in
             </Link>
