@@ -122,10 +122,12 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans pb-12 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-slate-400">
-          <LoaderCircle size={18} className="animate-spin" />
-          Loading profile...
+      <div className="min-h-screen bg-[#070915] text-[#FAFAF9] font-sans pb-12 flex items-center justify-center relative overflow-hidden">
+        {/* Subtle background glow for loading */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#674E98]/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="flex flex-col items-center gap-4 text-[#ACA7B6] z-10">
+          <LoaderCircle size={32} className="animate-spin text-[#917FBA]" strokeWidth={2} />
+          <span className="font-medium tracking-wide">Loading profile...</span>
         </div>
       </div>
     );
@@ -133,178 +135,192 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans pb-12 flex items-center justify-center">
-        <div className="text-slate-400">Unable to load profile.</div>
+      <div className="min-h-screen bg-[#070915] text-[#FAFAF9] font-sans pb-12 flex items-center justify-center relative">
+        <div className="text-[#ACA7B6] bg-[#25233F]/40 px-8 py-4 rounded-2xl border border-[#44356F]/50 backdrop-blur-xl">Unable to load profile.</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans pb-12">
-      {/* Page Header */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Your Profile</h1>
-        <p className="mt-1 text-slate-400">Manage your account details and preferences.</p>
+    <div className="min-h-screen bg-[#070915] text-[#FAFAF9] font-sans pb-20 relative overflow-hidden">
+      
+      {/* Premium Atmospheric Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[0%] left-[20%] w-[600px] h-[600px] bg-[#674E98]/10 blur-[150px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] bg-[#917FBA]/10 blur-[130px] rounded-full mix-blend-screen" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page Header */}
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#FAFAF9] tracking-tight drop-shadow-sm">Your Profile</h1>
+        <p className="mt-2 text-[#ACA7B6] font-medium text-lg">Manage your account details and preferences.</p>
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Identity Card */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-6 shadow-sm backdrop-blur-sm flex flex-col items-center text-center">
+          
+          {/* Left Column: Identity & Security */}
+          <div className="lg:col-span-1 space-y-8">
+            
+            {/* Identity Card */}
+            <div className="bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] p-8 shadow-[0_12px_40px_rgba(7,9,21,0.6)] ring-1 ring-[#FAFAF9]/5 flex flex-col items-center text-center relative overflow-hidden group hover:border-[#674E98]/50 transition-all duration-500">
+              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#917FBA]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
               {/* Avatar */}
-              <div className="relative mb-4">
-                <div className="h-24 w-24 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center border-4 border-[#0f172a] shadow-lg">
-                  <span className="text-3xl font-bold text-emerald-500">
+              <div className="relative mb-6">
+                <div className="h-28 w-28 bg-gradient-to-br from-[#44356F] to-[#674E98] rounded-full flex items-center justify-center border-[6px] border-[#070915] shadow-[0_0_25px_rgba(103,78,152,0.4)] ring-1 ring-[#917FBA]/20 group-hover:scale-105 transition-transform duration-500">
+                  <span className="text-4xl font-extrabold text-[#FAFAF9] drop-shadow-md">
                     {user.firstName[0]}
                     {user.lastName ? user.lastName[0] : ""}
                   </span>
                 </div>
                 <div
-                  className={`absolute bottom-0 right-0 h-6 w-6 border-4 border-[#0f172a] rounded-full ${
-                    user.status === "Active" ? "bg-emerald-500" : "bg-slate-500"
+                  className={`absolute bottom-1 right-1 h-7 w-7 border-4 border-[#070915] rounded-full shadow-sm ${
+                    user.status === "Active" ? "bg-[#917FBA] shadow-[0_0_10px_rgba(145,127,186,0.5)]" : "bg-[#44356F]"
                   }`}
                   title={user.status}
                 />
               </div>
 
               {/* Identity Info */}
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-2xl font-extrabold text-[#FAFAF9] tracking-tight">
                 {user.firstName} {user.lastName}
               </h2>
-              <p className="text-sm text-slate-400 mb-1">{user.role}</p>
-              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <CheckCircle2 size={12} />
+              <p className="text-sm font-medium text-[#ACA7B6] mt-1 mb-3">{user.role}</p>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#917FBA]/15 text-[#D3B4D2] border border-[#917FBA]/30 shadow-inner">
+                <CheckCircle2 size={14} strokeWidth={2.5} />
                 {user.status}
               </div>
 
               {/* Edit Button */}
-              <button className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-600 transition-all">
-                <Edit2 size={14} />
+              <button className="mt-8 w-full flex items-center justify-center gap-2.5 px-5 py-3.5 bg-[#070915]/60 backdrop-blur-md border border-[#44356F]/80 rounded-xl text-sm font-bold text-[#FAFAF9] hover:bg-[#25233F]/80 hover:border-[#917FBA]/60 hover:shadow-[0_8px_20px_rgba(103,78,152,0.2)] transition-all duration-300 hover:-translate-y-0.5">
+                <Edit2 size={16} className="text-[#917FBA]" />
                 Edit Profile
               </button>
             </div>
 
-            {/* Account Status / Meta */}
-            <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-6 shadow-sm">
-              <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Shield size={16} className="text-emerald-500" />
+            {/* Account Status / Security */}
+            <div className="bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] p-8 shadow-[0_12px_40px_rgba(7,9,21,0.6)] ring-1 ring-[#FAFAF9]/5 hover:border-[#674E98]/40 transition-all duration-300">
+              <h3 className="text-lg font-extrabold text-[#FAFAF9] mb-6 flex items-center gap-3 tracking-tight">
+                <Shield size={20} className="text-[#917FBA]" />
                 Security
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Password</span>
-                  <button className="text-emerald-500 hover:text-emerald-400 font-medium">Update</button>
+                  <span className="font-semibold text-[#ACA7B6]">Password</span>
+                  <button className="text-[#917FBA] hover:text-[#D3B4D2] font-bold transition-colors">Update</button>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">2FA</span>
-                  <span className="text-slate-500">Disabled</span>
+                  <span className="font-semibold text-[#ACA7B6]">2FA</span>
+                  <span className="text-[#44356F] font-bold bg-[#070915]/50 px-3 py-1 rounded-md border border-[#44356F]/30">Disabled</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Column: Details & Settings */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
+            
             {/* Account Information */}
-            <section className="bg-slate-800/50 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-800">
-                <h3 className="text-lg font-semibold text-white">Account Information</h3>
+            <section className="bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] shadow-[0_12px_40px_rgba(7,9,21,0.6)] ring-1 ring-[#FAFAF9]/5 overflow-hidden hover:border-[#674E98]/40 transition-all duration-300 relative">
+              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FAFAF9]/10 to-transparent" />
+              <div className="px-8 py-6 border-b border-[#44356F]/50 bg-[#070915]/30">
+                <h3 className="text-xl font-extrabold text-[#FAFAF9] tracking-tight">Account Information</h3>
               </div>
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InfoField label="Username" value={user.username} icon={<User size={16} />} />
-                <InfoField label="Email Address" value={user.email} icon={<Mail size={16} />} />
-                <InfoField label="Date Joined" value={user.joined} icon={<Calendar size={16} />} />
-                <InfoField label="Last Activity" value={user.lastActivity} icon={<Clock size={16} />} />
+              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <InfoField label="Username" value={user.username} icon={<User size={18} />} />
+                <InfoField label="Email Address" value={user.email} icon={<Mail size={18} />} />
+                <InfoField label="Date Joined" value={user.joined} icon={<Calendar size={18} />} />
+                <InfoField label="Last Activity" value={user.lastActivity} icon={<Clock size={18} />} />
               </div>
             </section>
 
             {/* Usage Summary */}
-            <section className="bg-slate-800/50 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-800">
-                <h3 className="text-lg font-semibold text-white">Impact Summary</h3>
+            <section className="bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] shadow-[0_12px_40px_rgba(7,9,21,0.6)] ring-1 ring-[#FAFAF9]/5 overflow-hidden hover:border-[#674E98]/40 transition-all duration-300">
+              <div className="px-8 py-6 border-b border-[#44356F]/50 bg-[#070915]/30">
+                <h3 className="text-xl font-extrabold text-[#FAFAF9] tracking-tight">Impact Summary</h3>
               </div>
-              <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <StatCard
                   label="Items Analyzed"
                   value={user.stats.totalItems.toLocaleString()}
-                  icon={<Activity size={18} className="text-blue-400" />}
+                  icon={<Activity size={20} className="text-[#917FBA]" />}
                 />
                 <StatCard
                   label="Biodegradable"
                   value={user.stats.biodegradableCount.toLocaleString()}
-                  icon={<Leaf size={18} className="text-emerald-400" />}
+                  icon={<Leaf size={20} className="text-[#D3B4D2]" />}
                 />
                 <StatCard
                   label="Non-Bio"
                   value={user.stats.nonBiodegradableCount.toLocaleString()}
-                  icon={<Trash2 size={18} className="text-amber-400" />}
+                  icon={<Trash2 size={20} className="text-[#ACA7B6]" />}
                 />
               </div>
             </section>
 
             {/* Preferences */}
-            <section className="bg-slate-800/50 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-800">
-                <h3 className="text-lg font-semibold text-white">Preferences</h3>
+            <section className="bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] shadow-[0_12px_40px_rgba(7,9,21,0.6)] ring-1 ring-[#FAFAF9]/5 overflow-hidden hover:border-[#674E98]/40 transition-all duration-300">
+              <div className="px-8 py-6 border-b border-[#44356F]/50 bg-[#070915]/30">
+                <h3 className="text-xl font-extrabold text-[#FAFAF9] tracking-tight">Preferences</h3>
               </div>
-              <div className="p-6 space-y-6">
+              <div className="p-8 space-y-8">
                 {/* Notification Row */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-lg text-slate-400">
-                      <Bell size={18} />
+                <div className="flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[#070915]/60 rounded-xl text-[#917FBA] border border-[#44356F]/50 shadow-inner group-hover:border-[#674E98]/50 transition-colors">
+                      <Bell size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">Notifications</p>
-                      <p className="text-xs text-slate-400">Receive weekly impact summaries</p>
+                      <p className="text-base font-bold text-[#FAFAF9]">Notifications</p>
+                      <p className="text-sm font-medium text-[#ACA7B6] mt-0.5">Receive weekly impact summaries</p>
                     </div>
                   </div>
-                  {/* Mock Toggle */}
-                  <div className="w-10 h-5 bg-emerald-500 rounded-full relative cursor-pointer opacity-90 hover:opacity-100 transition-opacity">
-                    <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full shadow-sm" />
+                  {/* Premium Toggle */}
+                  <div className="w-12 h-6 bg-gradient-to-r from-[#674E98] to-[#917FBA] rounded-full relative cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] hover:brightness-110 transition-all">
+                    <div className="absolute right-1 top-1 w-4 h-4 bg-[#FAFAF9] rounded-full shadow-sm" />
                   </div>
                 </div>
 
                 {/* Theme Row */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-lg text-slate-400">
-                      <Moon size={18} />
+                <div className="flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[#070915]/60 rounded-xl text-[#917FBA] border border-[#44356F]/50 shadow-inner group-hover:border-[#674E98]/50 transition-colors">
+                      <Moon size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">Theme</p>
-                      <p className="text-xs text-slate-400">Dark mode is enabled by default</p>
+                      <p className="text-base font-bold text-[#FAFAF9]">Theme</p>
+                      <p className="text-sm font-medium text-[#ACA7B6] mt-0.5">Dark mode is enabled by default</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-slate-500 bg-slate-900 px-3 py-1 rounded border border-slate-800">
+                  <span className="text-xs font-bold text-[#D3B4D2] bg-[#070915]/80 px-4 py-2 rounded-lg border border-[#44356F]/60 shadow-inner tracking-wide uppercase">
                     System Default
                   </span>
                 </div>
 
                 {/* Language Row */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-lg text-slate-400">
-                      <Globe size={18} />
+                <div className="flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[#070915]/60 rounded-xl text-[#917FBA] border border-[#44356F]/50 shadow-inner group-hover:border-[#674E98]/50 transition-colors">
+                      <Globe size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">Language</p>
-                      <p className="text-xs text-slate-400">Platform language</p>
+                      <p className="text-base font-bold text-[#FAFAF9]">Language</p>
+                      <p className="text-sm font-medium text-[#ACA7B6] mt-0.5">Platform language</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-slate-300">English (US)</span>
+                  <span className="text-sm font-bold text-[#FAFAF9] bg-[#070915]/40 px-4 py-2 rounded-lg border border-[#44356F]/30">English (US)</span>
                 </div>
               </div>
             </section>
 
             {/* Logout Action */}
-            <div className="pt-4 flex justify-end">
+            <div className="pt-2 flex justify-end">
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/10 transition-all text-sm font-medium"
+                className="flex items-center gap-2.5 px-8 py-4 rounded-xl border border-[#44356F]/60 text-[#D3B4D2] bg-[#25233F]/30 hover:text-[#FAFAF9] hover:border-[#674E98] hover:bg-[#674E98]/20 hover:shadow-[0_8px_20px_rgba(103,78,152,0.2)] transition-all duration-300 text-sm font-bold backdrop-blur-md transform hover:-translate-y-0.5"
               >
-                <LogOut size={16} />
+                <LogOut size={18} strokeWidth={2.5} />
                 Sign Out
               </button>
             </div>
@@ -316,21 +332,25 @@ const Profile = () => {
 };
 
 const InfoField = ({ label, value, icon }) => (
-  <div className="space-y-1.5">
-    <label className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wide">
-      {icon} {label}
+  <div className="space-y-2">
+    <label className="flex items-center gap-2 text-xs font-extrabold text-[#ACA7B6] uppercase tracking-widest">
+      <span className="text-[#674E98]">{icon}</span> {label}
     </label>
-    <div className="text-sm font-medium text-white bg-slate-900/50 border border-slate-800/50 px-3 py-2.5 rounded-lg">
+    <div className="text-[15px] font-bold text-[#FAFAF9] bg-[#070915]/50 border border-[#44356F]/50 px-4 py-3.5 rounded-xl shadow-inner break-words">
       {value}
     </div>
   </div>
 );
 
 const StatCard = ({ label, value, icon }) => (
-  <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 flex flex-col justify-center text-center hover:border-slate-700 transition-colors">
-    <div className="flex justify-center mb-2">{icon}</div>
-    <div className="text-xl font-bold text-white mb-0.5">{value}</div>
-    <div className="text-xs text-slate-500 font-medium">{label}</div>
+  <div className="bg-[#070915]/40 border border-[#44356F]/50 rounded-2xl p-5 flex flex-col justify-center text-center hover:border-[#674E98]/60 hover:bg-[#25233F]/40 transition-all duration-300 hover:shadow-[0_4px_15px_rgba(103,78,152,0.15)] group">
+    <div className="flex justify-center mb-3">
+      <div className="p-2.5 bg-[#25233F]/50 rounded-xl border border-[#44356F]/40 shadow-inner group-hover:scale-110 transition-transform duration-300">
+        {icon}
+      </div>
+    </div>
+    <div className="text-2xl font-extrabold text-[#FAFAF9] mb-1 tracking-tight">{value}</div>
+    <div className="text-[11px] font-bold text-[#ACA7B6] uppercase tracking-widest">{label}</div>
   </div>
 );
 

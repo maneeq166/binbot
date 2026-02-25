@@ -1,6 +1,22 @@
+const fs = require("fs");
 const { createWasteText, getWasteHistory } = require("../../services/waste");
+const aiClassifier = require("../../services/aiClassifier");
+const Waste = require("../../models/waste.model");
+const ApiError = require("../../utils/apiError");
 const ApiResponse = require("../../utils/apiResponse");
 const { asyncHandler } = require("../../utils/asyncHandler/index");
+
+const mapWasteTypeToDb = value => {
+    const v = String(value || "").trim().toLowerCase();
+    if (v === "biodegradable") return "biodegradable";
+    return "non-biodegradable";
+};
+
+const mapBinColorToDb = value => {
+    const v = String(value || "").trim().toLowerCase();
+    if (v === "green" || v === "blue" || v === "black") return v;
+    return "black";
+};
 
 exports.createWasteRecordText = asyncHandler(async(req,res)=>{
     const id = req.id;
@@ -21,4 +37,65 @@ exports.getWastes=asyncHandler(async(req,res)=>{
     .status(statusCode)
     .json(new ApiResponse(statusCode, data, message));
 })
+
+exports.classifyImage = asyncHandler(async (req, res) => {
+    const id = req.id;
+    if (!req.file) {
+        throw new ApiError(400, "No file uploaded");
+    }
+
+    const imagePath = req.file.path;
+    let aiResult = null;
+    let aiError = null;
+    let dbError = null;
+    let deleteError = null;
+
+    try {
+        aiResult = await aiClassifier(imagePath);
+        const wasteTypeDb = mapWasteTypeToDb(aiResult.wasteType);
+        const binColorDb = mapBinColorToDb(aiResult.binColor);
+
+        await Waste.create({
+            userId: id,
+            inputType: "image",
+            inputValue: "image",
+            wasteType: wasteTypeDb,
+            binColor: binColorDb,
+            suggestion: aiResult.suggestion,
+            source: "ai",
+        });
+    } catch (err) {
+        if (!aiResult) {
+            aiError = err;
+        } else {
+            dbError = err;
+        }
+    } finally {
+        try {
+            await fs.promises.unlink(imagePath);
+        } catch (err) {
+            deleteError = err;
+        }
+    }
+
+    if (aiError) {
+        throw new ApiError(500, "AI classification failed");
+    }
+    if (dbError) {
+        throw new ApiError(500, "Failed to save waste record");
+    }
+    if (deleteError) {
+        throw new ApiError(500, "Failed to delete temporary file");
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: {
+            wasteType: aiResult.wasteType,
+            binColor: aiResult.binColor,
+            suggestion: aiResult.suggestion,
+            confidence: aiResult.confidence,
+        },
+    });
+});
 
