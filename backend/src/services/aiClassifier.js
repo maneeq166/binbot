@@ -1,22 +1,25 @@
 const fs = require("fs");
 const path = require("path");
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const PROMPT =
-  "You are a waste classification assistant.\n\n" +
-  "Analyze this waste image.\n\n" +
-  "Return ONLY JSON:\n\n" +
-  "{\n" +
-  "wasteType:\n" +
-  "Biodegradable or Recyclable or General Waste\n\n" +
-  "binColor:\n" +
-  "Green or Blue or Black\n\n" +
-  "suggestion:\n" +
-  "short disposal instruction\n\n" +
-  "confidence:\n" +
-  "0-100 number\n" +
-  "}\n\n" +
-  "Do not include explanations.";
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const PROMPT = `
+You are a waste classification assistant.
+
+Analyze this waste image.
+
+Return ONLY JSON:
+
+{
+"wasteType": "Biodegradable or Recyclable or General Waste",
+"binColor": "Green or Blue or Black",
+"suggestion": "short disposal instruction",
+"confidence": number between 0 and 100
+}
+
+No explanation.
+`;
 
 const MIME_BY_EXT = {
   ".jpg": "image/jpeg",
@@ -25,73 +28,86 @@ const MIME_BY_EXT = {
   ".webp": "image/webp",
 };
 
-const normalizeWasteType = value => {
-  const v = String(value || "").trim().toLowerCase();
-  if (v === "biodegradable") return "Biodegradable";
-  if (v === "recyclable") return "Recyclable";
-  if (v === "general waste" || v === "general") return "General Waste";
-  return null;
-};
-
-const normalizeBinColor = value => {
-  const v = String(value || "").trim().toLowerCase();
-  if (v === "green") return "Green";
-  if (v === "blue") return "Blue";
-  if (v === "black") return "Black";
-  return null;
-};
-
-const safeParseJson = text => {
-  const trimmed = String(text || "").trim();
-  if (!trimmed) throw new Error("Empty AI response");
-  const match = trimmed.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("Invalid JSON in AI response");
+function safeParseJson(text) {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Invalid JSON response");
   return JSON.parse(match[0]);
-};
+}
+
+function normalizeWasteType(value) {
+  const v = String(value || "").toLowerCase();
+
+  if (v.includes("bio")) return "Biodegradable";
+  if (v.includes("recycl")) return "Recyclable";
+  return "General Waste";
+}
+
+function normalizeBinColor(value) {
+  const v = String(value || "").toLowerCase();
+
+  if (v.includes("green")) return "Green";
+  if (v.includes("blue")) return "Blue";
+  return "Black";
+}
 
 module.exports = async function aiClassifier(imagePath) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set");
-  }
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const buffer = await fs.promises.readFile(imagePath);
-  const ext = path.extname(imagePath).toLowerCase();
-  const mime = MIME_BY_EXT[ext] || "image/jpeg";
-  const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
+  if (!process.env.GEMINI_API_KEY)
+    throw new Error("GEMINI_API_KEY missing");
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "text", text: PROMPT },
-          { type: "image_url", image_url: { url: dataUrl } },
-        ],
-      },
-    ],
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
   });
 
-  const content = response?.choices?.[0]?.message?.content;
-  const parsed = safeParseJson(content);
+  const buffer = await fs.promises.readFile(imagePath);
+
+  const ext = path.extname(imagePath).toLowerCase();
+
+  const mimeType = MIME_BY_EXT[ext] || "image/jpeg";
+
+  const imagePart = {
+    inlineData: {
+      data: buffer.toString("base64"),
+      mimeType,
+    },
+  };
+
+  const result = await model.generateContent([
+    PROMPT,
+    imagePart,
+  ]);
+
+  const text = result.response.text();
+
+  const parsed = safeParseJson(text);
 
   const wasteType = normalizeWasteType(parsed.wasteType);
+
   const binColor = normalizeBinColor(parsed.binColor);
+
   const suggestion =
-    typeof parsed.suggestion === "string" ? parsed.suggestion.trim() : "";
-  const confidence = Number(parsed.confidence);
+    parsed.suggestion ||
+    "Dispose properly.";
 
-  if (!wasteType || !binColor || !suggestion || Number.isNaN(confidence)) {
-    throw new Error("Invalid AI response format");
-  }
-
-  const boundedConfidence = Math.max(0, Math.min(100, Math.round(confidence)));
+  const confidence =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Number(parsed.confidence) || 70
+      )
+    );
 
   return {
+
     wasteType,
+
     binColor,
+
     suggestion,
-    confidence: boundedConfidence,
+
+    confidence,
+
   };
+
 };

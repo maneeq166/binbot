@@ -45,6 +45,8 @@ exports.classifyImage = asyncHandler(async (req, res) => {
     }
 
     const imagePath = req.file.path;
+    console.log(imagePath);
+    
     let aiResult = null;
     let aiError = null;
     let dbError = null;
@@ -52,6 +54,11 @@ exports.classifyImage = asyncHandler(async (req, res) => {
 
     try {
         aiResult = await aiClassifier(imagePath);
+        console.log("airesult:",aiResult);
+        console.log("aierror:",aiError);
+
+        
+        
         const wasteTypeDb = mapWasteTypeToDb(aiResult.wasteType);
         const binColorDb = mapBinColorToDb(aiResult.binColor);
 
@@ -79,6 +86,8 @@ exports.classifyImage = asyncHandler(async (req, res) => {
     }
 
     if (aiError) {
+        console.log(aiError);
+        
         throw new ApiError(500, "AI classification failed");
     }
     if (dbError) {

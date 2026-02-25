@@ -14,6 +14,7 @@ const storage = multer.diskStorage({
       }
       cb(null, UPLOAD_DIR);
     } catch (err) {
+      console.error(`Error creating upload directory: ${err}`);
       cb(err);
     }
   },
@@ -28,6 +29,7 @@ const fileFilter = (req, file, cb) => {
   if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
     const err = new Error("Invalid file type. Only JPEG, PNG, and WEBP are allowed.");
     err.statusCode = 400;
+    console.error(`Error filtering file: ${err}`);
     return cb(err);
   }
   return cb(null, true);
@@ -43,15 +45,33 @@ const uploadSingle = upload.single("image");
 
 const uploadMiddleware = (req, res, next) => {
   uploadSingle(req, res, err => {
-    if (!err) return next();
-    let statusCode = err.statusCode || 400;
-    let message = err.message || "File upload failed";
-    if (err.code === "LIMIT_FILE_SIZE") {
-      statusCode = 400;
-      message = "File size exceeds 5MB limit";
+
+    if (err) {
+
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({
+          success: false,
+          message: "File size exceeds 5MB limit"
+        });
+      }
+
+      return res.status(err.statusCode || 400).json({
+        success: false,
+        message: err.message || "File upload failed"
+      });
     }
-    return res.status(statusCode).json({ success: false, message });
+
+    // THIS is correct validation
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file provided"
+      });
+    }
+
+    next();
   });
 };
 
 module.exports = uploadMiddleware;
+
