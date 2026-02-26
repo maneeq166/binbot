@@ -12,6 +12,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./src/config/swagger/index");
 const ApiResponse = require("./src/utils/apiResponse");
 const { connectToDatabase } = require("./src/config/connection/index");
+const { cleanupOldAudioFiles } = require("./src/services/ttsService");
 
 const { MONGODB_URI, NODE_ENV } = process.env;
 const PORT = process.env.PORT || 5000;
@@ -53,6 +54,8 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/audio", express.static("audio"));
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Logging setup
@@ -87,6 +90,11 @@ app.use((req, res, next) => {
 
 //  Connect to MongoDB
 connectToDatabase(MONGODB_URI);
+
+//  Audio cleanup job - runs every hour
+setInterval(() => {
+  cleanupOldAudioFiles(24).catch(console.error);
+}, 60 * 60 * 1000);
 
 //  Start listening
 if (require.main === module) {

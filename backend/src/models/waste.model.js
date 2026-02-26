@@ -33,6 +33,10 @@ const wasteSchema = new mongoose.Schema({
       enum: ["rule-based", "ai"],
       default: "rule-based",
     },
+  audioUrl: {
+    type: String,
+    default: null,
+  },
 }, { timestamps: true });
 
 const Waste = mongoose.model("waste",wasteSchema);

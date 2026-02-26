@@ -14,9 +14,10 @@ import {
   Trash2,
   AlertCircle,
   Loader2,
-  X
+  X,
+  Volume2
 } from 'lucide-react';
-import { createWasteRecord } from '../api/waste/index.js';
+import { createWasteRecord, classifyImage } from '../api/waste/index.js';
 import { wasteSchema } from '../validation/waste';
 
 const Classify = () => {
@@ -45,6 +46,9 @@ const Classify = () => {
   const [apiError, setApiError] = useState(null);
   const [resultId, setResultId] = useState(null);
   const [displayQuery, setDisplayQuery] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
   const prefillQuery = searchParams.get('query');
 
   useEffect(() => {
@@ -120,6 +124,86 @@ const Classify = () => {
     setApiError(null);
     setResultId(null);
     setDisplayQuery('');
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setAudioUrl(null);
+  };
+
+  const playAudio = () => {
+    if (audioUrl) {
+      const fullAudioUrl = audioUrl.startsWith('http') ? audioUrl : `http://localhost:3000${audioUrl}`;
+      const audio = new Audio(fullAudioUrl);
+      audio.play().catch(err => console.error('Audio play failed:', err));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setResult(null);
+      setApiError(null);
+    }
+  };
+
+  const mapBackendResultToDisplay = (data) => {
+    const binColor = data?.data?.binColor?.toLowerCase() || 'black';
+    const wasteType = data?.data?.wasteType || 'General Waste';
+    const suggestion = data?.data?.suggestion || 'Please dispose of this item properly.';
+    const audioUrl = data?.data?.audioUrl || null;
+
+    let color = 'slate';
+    let bin = 'Black Bin';
+    let icon = <Trash2 size={24} className="text-[#ACA7B6]" />;
+
+    if (binColor === 'green') {
+      color = 'emerald';
+      bin = 'Green Bin';
+      icon = <Leaf size={24} className="text-[#917FBA]" />;
+    } else if (binColor === 'blue') {
+      color = 'blue';
+      bin = 'Blue Bin';
+      icon = <Recycle size={24} className="text-[#D3B4D2]" />;
+    }
+
+    const typeMap = {
+      'biodegradable': 'Biodegradable',
+      'non-biodegradable': 'Non-Biodegradable',
+      'recyclable': 'Recyclable',
+    };
+    const displayType = typeMap[wasteType.toLowerCase()] || wasteType;
+
+    return {
+      type: displayType,
+      bin,
+      color,
+      suggestion,
+      icon,
+      audioUrl,
+    };
+  };
+
+  const onImageSubmit = async () => {
+    if (!selectedFile) return;
+
+    setIsLoading(true);
+    setResult(null);
+    setApiError(null);
+
+    const res = await classifyImage(selectedFile);
+
+    if (res?.success === false) {
+      setApiError(res?.message || 'Failed to classify image');
+      setIsLoading(false);
+      return;
+    }
+
+    const mappedResult = mapBackendResultToDisplay(res);
+    setResult(mappedResult);
+    setAudioUrl(res?.data?.audioUrl || null);
+    setResultId(Math.floor(Math.random() * 10000).toString().padStart(4, '0'));
+    setIsLoading(false);
   };
 
   return (
@@ -232,25 +316,92 @@ const Classify = () => {
               </div>
             </form>
           ) : (
-            /* 4. Image Upload Card (Placeholder) */
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center border-2 border-dashed border-[#44356F] rounded-2xl bg-[#070915]/30 relative z-10 transition-colors hover:bg-[#070915]/50 hover:border-[#674E98]/60">
-              <div className="h-20 w-20 bg-[#25233F] rounded-full flex items-center justify-center mb-6 text-[#917FBA] border border-[#44356F] shadow-[0_4px_20px_rgba(103,78,152,0.2)]">
-                <UploadCloud size={36} strokeWidth={2} />
-              </div>
-              <h3 className="text-xl font-bold text-[#FAFAF9] mb-3 tracking-tight">Upload an image</h3>
-              <p className="text-[#ACA7B6] max-w-sm text-base mb-8 font-medium">
-                Drag and drop an image here, or click to select a file.
-              </p>
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#674E98]/10 border border-[#674E98]/30 text-xs font-bold text-[#D3B4D2] uppercase tracking-wider">
-                <AlertCircle size={14} />
-                Image classification coming soon
-              </div>
+            /* 4. Image Upload Card */
+            <div className="space-y-6 relative z-10">
+              {!previewUrl ? (
+                <div 
+                  className="flex flex-col items-center justify-center py-16 px-6 text-center border-2 border-dashed border-[#44356F] rounded-2xl bg-[#070915]/30 cursor-pointer relative transition-colors hover:bg-[#070915]/50 hover:border-[#674E98]/60"
+                  onClick={() => document.getElementById('image-input').click()}
+                >
+                  <input
+                    id="image-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <div className="h-20 w-20 bg-[#25233F] rounded-full flex items-center justify-center mb-6 text-[#917FBA] border border-[#44356F] shadow-[0_4px_20px_rgba(103,78,152,0.2)]">
+                    <UploadCloud size={36} strokeWidth={2} />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#FAFAF9] mb-3 tracking-tight">Upload an image</h3>
+                  <p className="text-[#ACA7B6] max-w-sm text-base mb-8 font-medium">
+                    Drag and drop an image here, or click to select a file.
+                  </p>
+                  <button
+                    type="button"
+                    className="px-6 py-3 rounded-xl font-bold text-sm bg-[#674E98] text-[#FAFAF9] hover:bg-[#917FBA] transition-colors"
+                  >
+                    Select Image
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="relative rounded-2xl overflow-hidden border border-[#44356F] bg-[#070915]/30">
+                    <img 
+                      src={previewUrl} 
+                      alt="Selected" 
+                      className="w-full h-64 object-contain bg-[#070915]/50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedFile(null); setPreviewUrl(null); setResult(null); setApiError(null); }}
+                      className="absolute top-3 right-3 p-2 bg-[#25233F]/80 rounded-full text-[#ACA7B6] hover:text-[#FAFAF9] hover:bg-[#44356F] transition-colors"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  {apiError && (
+                    <div className="bg-[#D3B4D2]/10 border border-[#D3B4D2]/30 rounded-xl p-4 backdrop-blur-md">
+                      <p className="text-[#D3B4D2] text-sm font-semibold flex items-center gap-2">
+                        <AlertCircle size={18} />
+                        {apiError}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={onImageSubmit}
+                      disabled={isLoading}
+                      className={`flex items-center justify-center gap-2.5 px-10 py-4 rounded-2xl font-bold text-[15px] transition-all duration-300 ease-out ${
+                        isLoading
+                          ? 'bg-[#25233F] text-[#ACA7B6]/50 border border-[#44356F]/50 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-[#674E98] to-[#917FBA] text-[#070915] hover:from-[#917FBA] hover:to-[#D3B4D2] hover:shadow-[0_8px_30px_rgba(145,127,186,0.5)] hover:-translate-y-1 hover:scale-[1.02] ring-1 ring-[#FAFAF9]/10'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 size={20} className="animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Search size={20} strokeWidth={2.5} />
+                          Classify Image
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* 5. Classification Result Section */}
-        {result && mode === 'text' && !isLoading && (
+        {result && !isLoading && (
           <>
             {apiLoading && (
               <div className="flex items-center justify-center py-4 bg-[#25233F]/40 backdrop-blur-md rounded-xl border border-[#44356F]/50">
@@ -262,14 +413,14 @@ const Classify = () => {
               <div className="bg-[#D3B4D2]/10 border border-[#D3B4D2]/30 rounded-2xl p-5 mb-4 backdrop-blur-md shadow-lg">
                 <p className="text-[#D3B4D2] text-sm font-semibold flex items-center gap-2">
                   <AlertCircle size={18} />
-                  Error saving waste record: {apiError}
+                  {apiError}
                 </p>
               </div>
             )}
           </>
         )}
         
-        {result && mode === 'text' && !isLoading && (
+        {result && !isLoading && (
           <div className="animate-in fade-in slide-in-from-bottom-6 duration-500 ease-out pb-10">
             <div className={`rounded-3xl border overflow-hidden backdrop-blur-xl shadow-[0_12px_40px_rgba(7,9,21,0.7)] ring-1 ring-[#FAFAF9]/5 transition-all duration-300 ${
               result.color === 'emerald' ? 'bg-[#25233F]/70 border-[#917FBA]/40 shadow-[0_0_40px_rgba(145,127,186,0.15)]' :
@@ -291,7 +442,11 @@ const Classify = () => {
                     <div className="pt-1">
                       <h2 className="text-2xl font-extrabold text-[#FAFAF9] mb-1.5 tracking-tight">{result.type}</h2>
                       <p className="text-sm font-medium text-[#ACA7B6]">
-                        Result for <span className="text-[#FAFAF9] font-bold">"{displayQuery}"</span>
+                        {mode === 'text' ? (
+                          <>Result for <span className="text-[#FAFAF9] font-bold">"{displayQuery}"</span></>
+                        ) : (
+                          <>Result for uploaded image</>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -315,13 +470,22 @@ const Classify = () => {
                 <div className="mt-10 pt-8 border-t border-[#44356F]/50">
                   <div className="flex gap-4">
                     <CheckCircle2 size={24} className="text-[#917FBA] shrink-0 mt-0.5" strokeWidth={2.5} />
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-sm font-bold text-[#FAFAF9] uppercase tracking-widest mb-2">
                         Disposal Suggestion
                       </h3>
                       <p className="text-[#ACA7B6] text-lg font-medium leading-relaxed">
                         {result.suggestion}
                       </p>
+                      {audioUrl && (
+                        <button
+                          onClick={playAudio}
+                          className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#674E98] hover:bg-[#917FBA] text-[#FAFAF9] rounded-xl text-sm font-bold transition-colors"
+                        >
+                          <Volume2 size={18} />
+                          Listen to Instructions
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { createWasteText, getWasteHistory } = require("../../services/waste");
 const aiClassifier = require("../../services/aiClassifier");
+const { generateAudio } = require("../../services/ttsService");
 const Waste = require("../../models/waste.model");
 const ApiError = require("../../utils/apiError");
 const ApiResponse = require("../../utils/apiResponse");
@@ -51,6 +52,8 @@ exports.classifyImage = asyncHandler(async (req, res) => {
     let aiError = null;
     let dbError = null;
     let deleteError = null;
+    let audioUrl = null;
+    let audioFilename = null;
 
     try {
         aiResult = await aiClassifier(imagePath);
@@ -62,6 +65,17 @@ exports.classifyImage = asyncHandler(async (req, res) => {
         const wasteTypeDb = mapWasteTypeToDb(aiResult.wasteType);
         const binColorDb = mapBinColorToDb(aiResult.binColor);
 
+        const speechText = `This item is ${aiResult.wasteType}. Put it in the ${aiResult.binColor} bin. ${aiResult.suggestion}`;
+
+        let audioResult = null;
+        try {
+            audioResult = await generateAudio(speechText);
+            audioUrl = audioResult.url;
+            audioFilename = audioResult.filename;
+        } catch (audioError) {
+            console.log("Audio generation failed:", audioError.message);
+        }
+
         await Waste.create({
             userId: id,
             inputType: "image",
@@ -70,6 +84,7 @@ exports.classifyImage = asyncHandler(async (req, res) => {
             binColor: binColorDb,
             suggestion: aiResult.suggestion,
             source: "ai",
+            audioUrl: audioFilename,
         });
     } catch (err) {
         if (!aiResult) {
@@ -104,6 +119,8 @@ exports.classifyImage = asyncHandler(async (req, res) => {
             binColor: aiResult.binColor,
             suggestion: aiResult.suggestion,
             confidence: aiResult.confidence,
+            disposalGuide: aiResult.suggestion,
+            audioUrl,
         },
     });
 });
