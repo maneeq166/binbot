@@ -28,6 +28,7 @@ exports.createWasteText = async (id, wastename) => {
     userId: id,
     inputType: "text",
     inputValue: trimmedWastename,
+    itemName: trimmedWastename,
     wasteType: result.wasteType,
     binColor: result.binColor,
     suggestion: result.suggestion,
@@ -40,35 +41,61 @@ exports.createWasteText = async (id, wastename) => {
   };
 };
 
-exports.getWasteHistory = async (id, page = 1, limit = 10)=>{
-    if(!id){
-        throw new ApiError(400, "Required fields are missing");
-    }
+exports.classifyWasteText = async (wastename) => {
+  if (!wastename) {
+    throw new ApiError(400, "Required fields are missing");
+  }
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid user ID");
-    }
+  if (typeof wastename !== 'string') {
+    throw new ApiError(400, "Wastename must be a string");
+  }
 
-    const skip = (page - 1) * limit;
-    const history = await Waste.find({userId:id})
-        .select('inputValue binColor wasteType createdAt')
-        .sort({createdAt: -1})
-        .skip(skip)
-        .limit(limit);
+  const trimmedWastename = wastename.trim();
+  if (trimmedWastename.length === 0) {
+    throw new ApiError(400, "Wastename cannot be empty");
+  }
 
-    const total = await Waste.countDocuments({userId:id});
+  const key = trimmedWastename.toLowerCase();
 
-    return {
-        data: {
-            history,
-            pagination: {
-                page,
-                limit,
-                total,
-                pages: Math.ceil(total / limit)
-            }
-        },
-        message:"Fetched Waste History",
-        statusCode:200
-    }
-}
+  const result = RULES[key] || {
+    wasteType: "non-biodegradable",
+    binColor: "black",
+    suggestion: "Dispose according to local waste guidelines",
+  };
+
+  return {
+    itemName: trimmedWastename,
+    wasteType: result.wasteType,
+    binColor: result.binColor,
+    suggestion: result.suggestion,
+    confidence: 100, // since rule-based
+  };
+};
+
+exports.getWasteHistory = async (userId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  const total = await Waste.countDocuments({ userId });
+
+  const history = await Waste.find({ userId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .select('-__v');
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: {
+      history,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: totalPages,
+      },
+    },
+    message: "Fetched Waste History",
+    statusCode: 200,
+  };
+};

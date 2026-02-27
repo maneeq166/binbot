@@ -14,6 +14,10 @@ const wasteSchema = new mongoose.Schema({
     type: String, // text or image URL
     required: true,
   },
+  itemName: {
+    type: String,
+    required: true,
+  },
   wasteType: {
     type: String,
     enum: ["biodegradable", "non-biodegradable"],
@@ -37,7 +41,15 @@ const wasteSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  indexes: [
+    { key: { userId: 1 } },
+    { key: { createdAt: -1 } },
+    { key: { wasteType: 1 } },
+    { key: { binColor: 1 } },
+  ]
+});
 
 const Waste = mongoose.model("waste",wasteSchema);
 

@@ -2,3 +2,8 @@
 package-lock.json
 .env
 /logs
+/audio
+/uploads
+/tests
+backend/mistakes/codebase-audit.md
+backend/mistakes/

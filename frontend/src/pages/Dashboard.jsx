@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDashboardSummary } from '../api/dashboard';
+import { getWasteHistory } from '../api/waste';
+import { me } from '../api/auth';
 import { 
   ScanLine, 
   Leaf, 
@@ -17,15 +19,17 @@ const Dashboard = () => {
   const nav = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [recentActivity, setRecentActivity] = useState([]);
 
-  const auth = ()=>{
+  const auth = useCallback(() => {
     if(!localStorage.getItem("token")){
       toast.info("Please login!")
       nav("/login");
       return false;
     }
     return true;
-  }
+  }, [nav]);
 
   useEffect(()=>{
       const isAuthed = auth();
@@ -55,7 +59,35 @@ const Dashboard = () => {
       return () => {
         isActive = false;
       };
-  },[nav])
+   },[nav, auth])
+
+   useEffect(() => {
+     const fetchUser = async () => {
+       try {
+         const userData = await me();
+         if (userData.success) {
+           setUser(userData.data);
+         }
+       } catch (error) {
+         console.log('Failed to fetch user data:', error);
+       }
+     };
+     fetchUser();
+   }, []);
+
+   useEffect(() => {
+     const fetchRecentActivity = async () => {
+       try {
+         const result = await getWasteHistory(1, 5);
+         if (result.success) {
+           setRecentActivity(result.data.history || []);
+         }
+       } catch (error) {
+         console.log('Failed to fetch recent activity:', error);
+       }
+     };
+     fetchRecentActivity();
+   }, []);
 
   const stats = useMemo(() => {
     const totalItems = Number(dashboardData?.totalItems) || 0;
@@ -63,7 +95,7 @@ const Dashboard = () => {
     const nonBiodegradableCount = Number(dashboardData?.nonBiodegradableCount) || 0;
     const biodegradablePct = totalItems > 0 ? Math.round((biodegradableCount / totalItems) * 100) : 0;
     const nonBiodegradablePct = totalItems > 0 ? Math.round((nonBiodegradableCount / totalItems) * 100) : 0;
-    const divertedKg = (biodegradableCount * 0.1).toFixed(1);
+    const divertedKg = dashboardData?.divertedKg ? Number(dashboardData.divertedKg).toFixed(1) : ((Number(dashboardData?.binUsage?.green || 0) + Number(dashboardData?.binUsage?.blue || 0)) * 0.1).toFixed(1);
     return {
       totalItems,
       biodegradableCount,
@@ -73,6 +105,39 @@ const Dashboard = () => {
       divertedKg,
     };
   }, [dashboardData]);
+
+   const username = useMemo(() => {
+     if (!user?.username) return "User";
+     return user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase();
+   }, [user]);
+
+   const getTimeAgo = (timestamp) => {
+     const now = new Date();
+     const past = new Date(timestamp);
+     const diffMs = now - past;
+     const diffMins = Math.floor(diffMs / (1000 * 60));
+     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+     if (diffMins < 1) return 'Just now';
+     if (diffMins < 60) return `${diffMins} mins ago`;
+     if (diffHours < 24) return `${diffHours} hours ago`;
+     return `${diffDays} days ago`;
+   };
+
+   const formattedActivity = useMemo(() => {
+     return recentActivity.slice(0, 3).map(item => {
+       const itemName = item.itemName || item.inputValue || 'Unknown item';
+       const wasteType = item.wasteType === 'biodegradable' ? 'Compost' : item.wasteType === 'non-biodegradable' ? (item.binColor === 'blue' ? 'Recycle' : 'Landfill') : 'Unknown';
+       const timeAgo = getTimeAgo(item.createdAt);
+       const status = 'Correct'; // Assume correct for now
+       return {
+         desc: `${itemName} classified as ${wasteType}`,
+         time: timeAgo,
+         status
+       };
+     });
+   }, [recentActivity]);
 
   return (
     <div className="min-h-screen bg-[#070915] text-[#FAFAF9] font-sans pt-16 relative overflow-hidden">
@@ -93,7 +158,7 @@ const Dashboard = () => {
           
           <div className="relative z-10 p-8 sm:p-12">
             <h1 className="text-3xl md:text-4xl font-extrabold text-[#FAFAF9] tracking-tight mb-3 drop-shadow-sm">
-              Welcome back, Alex!
+              Welcome back, {username}!
             </h1>
             <p className="text-[#ACA7B6] max-w-xl text-lg mb-10 font-medium">
               You've diverted <span className="text-[#917FBA] font-bold drop-shadow-sm">{stats.divertedKg}kg</span> of waste from landfills this month.
@@ -147,21 +212,18 @@ const Dashboard = () => {
             </div>
             
             <div className="space-y-4">
-              <ActivityItem
-                desc="Apple Core classified as Compost"
-                time="2 mins ago"
-                status="Correct"
-              />
-              <ActivityItem
-                desc="Water Bottle classified as Recycle"
-                time="15 mins ago"
-                status="Correct"
-              />
-              <ActivityItem
-                desc="Cardboard Box classified as Recycle"
-                time="1 hour ago"
-                status="Review"
-              />
+              {formattedActivity.length > 0 ? formattedActivity.map((item, index) => (
+                <ActivityItem
+                  key={index}
+                  desc={item.desc}
+                  time={item.time}
+                  status={item.status}
+                />
+              )) : (
+                <div className="text-center py-8">
+                  <p className="text-[#ACA7B6] text-sm">No recent activity</p>
+                </div>
+              )}
             </div>
           </div>
 

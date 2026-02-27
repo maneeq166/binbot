@@ -567,7 +567,7 @@ const Analytics = () => {
           <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-[#44356F] via-[#674E98]/50 to-transparent" />
           
           <div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-[#FAFAF9] tracking-tight drop-shadow-sm mb-3">Analytics</h1>
+             <h1 className="text-2xl font-bold text-[#FAFAF9] tracking-tight drop-shadow-sm">Analytics</h1>
             <p className="text-[#ACA7B6] font-medium text-lg tracking-wide opacity-90">Understand your waste segregation impact and trends.</p>
           </div>
           
@@ -583,7 +583,7 @@ const Analytics = () => {
           <div className="space-y-10">
             
             {/* 3. Summary Metrics Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <SummaryCard 
                 title="Total Classified" 
                 value={formatNumber(totalClassifications)} 
@@ -614,7 +614,7 @@ const Analytics = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               
               {/* 4. Bin Usage Card — Centerpiece */}
-              <div className="lg:col-span-7 bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] p-10 shadow-[0_20px_60px_-15px_rgba(7,9,21,0.8)] ring-1 ring-[#FAFAF9]/5 transition-all duration-500 hover:border-[#674E98]/50 hover:shadow-[0_25px_65px_-15px_rgba(103,78,152,0.2)] flex flex-col relative overflow-hidden group">
+               <div className="lg:col-span-7 bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] p-8 shadow-[0_20px_60px_-15px_rgba(7,9,21,0.8)] ring-1 ring-[#FAFAF9]/5 transition-all duration-500 hover:border-[#674E98]/50 hover:shadow-[0_25px_65px_-15px_rgba(103,78,152,0.2)] flex flex-col relative overflow-hidden group">
                 
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#917FBA]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
@@ -669,7 +669,7 @@ const Analytics = () => {
               </div>
 
               {/* 5. Insights Panel — Intelligent premium */}
-              <div className="lg:col-span-5 bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] p-10 shadow-[0_20px_60px_-15px_rgba(7,9,21,0.8)] ring-1 ring-[#FAFAF9]/5 flex flex-col transition-all duration-500 hover:border-[#674E98]/50 hover:shadow-[0_25px_65px_-15px_rgba(103,78,152,0.2)] relative overflow-hidden group">
+               <div className="lg:col-span-5 bg-[#25233F]/30 backdrop-blur-2xl border border-[#44356F]/60 rounded-[32px] p-8 shadow-[0_20px_60px_-15px_rgba(7,9,21,0.8)] ring-1 ring-[#FAFAF9]/5 flex flex-col transition-all duration-500 hover:border-[#674E98]/50 hover:shadow-[0_25px_65px_-15px_rgba(103,78,152,0.2)] relative overflow-hidden group">
                 
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#D3B4D2]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
@@ -779,7 +779,7 @@ const SummaryCard = ({ title, value, unit, trend, trendUp, icon, color, subtext 
         <div>
           <p className="text-[#ACA7B6] text-sm font-bold tracking-widest uppercase mb-2">{title}</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-5xl font-extrabold text-[#FAFAF9] tracking-tight drop-shadow-md">{value}</span>
+             <span className="text-3xl font-extrabold text-[#FAFAF9] tracking-tight drop-shadow-md">{value}</span>
             <span className="text-base text-[#674E98] font-bold">{unit}</span>
           </div>
           {subtext && (

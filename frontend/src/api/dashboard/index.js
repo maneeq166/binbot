@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config.js";
 
 export const getDashboardSummary = async () => {
   try {
@@ -8,7 +9,7 @@ export const getDashboardSummary = async () => {
       throw new Error("No token found");
     }
 
-    const res = await axios.get("http://localhost:3000/api/dashboard/summary", {
+    const res = await axios.get(`${API_BASE_URL}/api/dashboard/summary`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -29,7 +30,7 @@ export const getDashboardAnalytics = async () => {
       throw new Error("No token found");
     }
 
-    const res = await axios.get("http://localhost:3000/api/dashboard/analytics", {
+    const res = await axios.get(`${API_BASE_URL}/api/dashboard/analytics`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

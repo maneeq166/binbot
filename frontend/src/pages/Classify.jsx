@@ -17,7 +17,8 @@ import {
   X,
   Volume2
 } from 'lucide-react';
-import { createWasteRecord, classifyImage } from '../api/waste/index.js';
+import { createWasteRecord, classifyImage, classifyText } from '../api/waste/index.js';
+import { API_BASE_URL } from '../api/config.js';
 import { wasteSchema } from '../validation/waste';
 
 const Classify = () => {
@@ -61,36 +62,7 @@ const Classify = () => {
     setDisplayQuery('');
   }, [prefillQuery, setValue]);
 
-  const classifyQuery = (value) => {
-    const lowerQuery = value.toLowerCase();
-    let mockResponse = {
-      type: 'General Waste',
-      bin: 'Black Bin',
-      color: 'slate',
-      suggestion: 'This item is not recyclable or compostable. Please dispose of it in the general waste bin.',
-      icon: <Trash2 size={24} className="text-[#ACA7B6]" />
-    };
 
-    if (lowerQuery.includes('apple') || lowerQuery.includes('banana') || lowerQuery.includes('food')) {
-      mockResponse = {
-        type: 'Biodegradable',
-        bin: 'Green Bin',
-        color: 'emerald',
-        suggestion: 'Great job! This is organic waste. Place it in the green compost bin.',
-        icon: <Leaf size={24} className="text-[#917FBA]" />
-      };
-    } else if (lowerQuery.includes('bottle') || lowerQuery.includes('can') || lowerQuery.includes('paper')) {
-      mockResponse = {
-        type: 'Recyclable',
-        bin: 'Blue Bin',
-        color: 'blue',
-        suggestion: 'This item can be recycled. Please ensure it is clean and dry before placing in the blue bin.',
-        icon: <Recycle size={24} className="text-[#D3B4D2]" />
-      };
-    }
-
-    return mockResponse;
-  };
 
   const onSubmit = async ({ query }) => {
     const trimmedQuery = query.trim();
@@ -101,20 +73,26 @@ const Classify = () => {
     setApiError(null);
     setDisplayQuery(trimmedQuery);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const mockResponse = classifyQuery(trimmedQuery);
-    setResult(mockResponse);
+    const res = await classifyText(trimmedQuery);
+
+    if (res?.success === false) {
+      setApiError(res?.message || 'Failed to classify text');
+      setIsLoading(false);
+      return;
+    }
+
+    const mappedResult = mapBackendResultToDisplay(res);
+    setResult(mappedResult);
+    setAudioUrl(res?.data?.audioUrl || null);
     setResultId(Math.floor(Math.random() * 10000).toString().padStart(4, '0'));
     setIsLoading(false);
 
-    setApiLoading(true);
-    const res = await createWasteRecord({ wastename: trimmedQuery });
-    if (res?.success === false) {
-      setApiError(res?.message || 'Failed to save waste record');
+    const saveRes = await createWasteRecord({ wastename: trimmedQuery });
+    if (saveRes?.success === false) {
+      setApiError(saveRes?.message || 'Failed to save waste record');
     } else {
       reset({ query: '', mode });
     }
-    setApiLoading(false);
   };
 
   const clearSearch = () => {
@@ -131,7 +109,9 @@ const Classify = () => {
 
   const playAudio = () => {
     if (audioUrl) {
-      const fullAudioUrl = audioUrl.startsWith('http') ? audioUrl : `http://localhost:3000${audioUrl}`;
+      const fullAudioUrl = audioUrl.startsWith('http')
+        ? audioUrl
+        : `${API_BASE_URL}${audioUrl.startsWith('/') ? '' : '/'}${audioUrl}`;
       const audio = new Audio(fullAudioUrl);
       audio.play().catch(err => console.error('Audio play failed:', err));
     }
@@ -151,7 +131,7 @@ const Classify = () => {
     const binColor = data?.data?.binColor?.toLowerCase() || 'black';
     const wasteType = data?.data?.wasteType || 'General Waste';
     const suggestion = data?.data?.suggestion || 'Please dispose of this item properly.';
-    const audioUrl = data?.data?.audioUrl || null;
+    const itemName = data?.data?.itemName || 'Unknown';
 
     let color = 'slate';
     let bin = 'Black Bin';
@@ -180,7 +160,7 @@ const Classify = () => {
       color,
       suggestion,
       icon,
-      audioUrl,
+      itemName,
     };
   };
 

@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { createWasteText, getWasteHistory } = require("../../services/waste");
+const { createWasteText, getWasteHistory, classifyWasteText } = require("../../services/waste");
 const aiClassifier = require("../../services/aiClassifier");
 const { generateAudio } = require("../../services/ttsService");
 const Waste = require("../../models/waste.model");
@@ -39,14 +39,48 @@ exports.getWastes=asyncHandler(async(req,res)=>{
     .json(new ApiResponse(statusCode, data, message));
 })
 
+exports.classifyText = asyncHandler(async (req, res) => {
+    const { wastename } = req.body;
+
+    const result = await classifyWasteText(wastename);
+
+    const speechText = `This item is ${result.wasteType}. Put it in the ${result.binColor} bin. ${result.suggestion}`;
+
+    let audioUrl = null;
+    try {
+        const audioResult = await generateAudio(speechText);
+        audioUrl = audioResult.url;
+    } catch (audioError) {
+        console.error("Audio generation failed:", audioError.message);
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: {
+            ...result,
+            audioUrl,
+        },
+    });
+});
+
 exports.classifyImage = asyncHandler(async (req, res) => {
     const id = req.id;
     if (!req.file) {
         throw new ApiError(400, "No file uploaded");
     }
 
+    // Validate file
+    const file = req.file;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.mimetype)) {
+        throw new ApiError(400, "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.");
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+        throw new ApiError(400, "File too large. Maximum size is 5MB.");
+    }
+
     const imagePath = req.file.path;
-    console.log(imagePath);
     
     let aiResult = null;
     let aiError = null;
@@ -58,10 +92,15 @@ exports.classifyImage = asyncHandler(async (req, res) => {
     try {
         aiResult = await aiClassifier(imagePath);
         console.log("airesult:",aiResult);
-        console.log("aierror:",aiError);
 
-        
-        
+        if (aiResult.isWaste === false) {
+            console.log("Rejected image:", aiResult.reason);
+            return res.status(400).json({
+                success: false,
+                message: "Uploaded image is not a waste item"
+            });
+        }
+
         const wasteTypeDb = mapWasteTypeToDb(aiResult.wasteType);
         const binColorDb = mapBinColorToDb(aiResult.binColor);
 
@@ -73,19 +112,22 @@ exports.classifyImage = asyncHandler(async (req, res) => {
             audioUrl = audioResult.url;
             audioFilename = audioResult.filename;
         } catch (audioError) {
-            console.log("Audio generation failed:", audioError.message);
+            console.error("Audio generation failed:", audioError.message);
         }
 
         await Waste.create({
             userId: id,
             inputType: "image",
-            inputValue: "image",
+            inputValue: req.file.filename,
+            itemName: aiResult.itemName,
             wasteType: wasteTypeDb,
             binColor: binColorDb,
             suggestion: aiResult.suggestion,
             source: "ai",
-            audioUrl: audioFilename,
+            audioUrl,
         });
+
+        console.log("Saved itemName:", aiResult.itemName);
     } catch (err) {
         if (!aiResult) {
             aiError = err;
@@ -101,7 +143,7 @@ exports.classifyImage = asyncHandler(async (req, res) => {
     }
 
     if (aiError) {
-        console.log(aiError);
+        console.error("AI classification error:", aiError);
         
         throw new ApiError(500, "AI classification failed");
     }
@@ -124,4 +166,3 @@ exports.classifyImage = asyncHandler(async (req, res) => {
         },
     });
 });
-

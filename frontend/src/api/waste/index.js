@@ -1,18 +1,14 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config.js";
 
 export const createWasteRecord = async ({ wastename }) => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No token found");
-    }
-
-    const res = await axios.post("http://localhost:3000/api/waste/create", {
+    const res = await axios.post(`${API_BASE_URL}/api/waste/create`, {
       wastename,
     }, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
 
@@ -28,14 +24,27 @@ export const createWasteRecord = async ({ wastename }) => {
 
 export const getWasteHistory = async (page = 1, limit = 10) => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No token found");
-    }
-
-    const res = await axios.get(`http://localhost:3000/api/waste/history?page=${page}&limit=${limit}`, {
+    const res = await axios.get(`${API_BASE_URL}/api/waste/history?page=${page}&limit=${limit}`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    const msg = error.response?.data?.message || error.message;
+    toast.error(msg);
+    return { success: false, message: msg };
+  }
+};
+
+export const classifyText = async (wastename) => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/api/waste/classify-text`, {
+      wastename,
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
 
@@ -49,17 +58,12 @@ export const getWasteHistory = async (page = 1, limit = 10) => {
 
 export const classifyImage = async (file) => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No token found");
-    }
-
     const formData = new FormData();
     formData.append("image", file);
 
-    const res = await axios.post("http://localhost:3000/api/waste/classify-image", formData, {
+    const res = await axios.post(`${API_BASE_URL}/api/waste/classify-image`, formData, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -67,6 +71,7 @@ export const classifyImage = async (file) => {
     return res.data;
   } catch (error) {
     const msg = error.response?.data?.message || error.message;
+    toast.error(msg);
     return { success: false, message: msg };
   }
 };

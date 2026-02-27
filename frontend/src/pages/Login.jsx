@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../validation/auth";
@@ -10,6 +10,14 @@ import { Recycle } from "lucide-react";
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      localStorage.removeItem("token");
+      toast.info("You were logged out. Please log in again.");
+    }
+  }, []);
 
   const {
     register,
@@ -32,7 +40,7 @@ const Login = () => {
 
       toast.success("Logged in successfully");
       navigate("/dashboard"); // change if needed
-    } catch (err) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setLoading(false);

@@ -73,17 +73,17 @@ const History = () => {
       const records = payload?.data?.history || [];
       const pagination = payload?.data?.pagination;
       const normalized = Array.isArray(records)
-        ? records.map((record, index) => {
-            const { date, time } = formatDateTime(record?.createdAt || record?.updatedAt);
-            return {
-              id: record?._id || record?.id || `${record?.createdAt || 'item'}-${index}`,
-              item: record?.wasteName || record?.inputValue || record?.wastename || 'Unknown item',
-              type: formatWasteType(record?.wasteType) || 'Unclassified',
-              bin: formatBinLabel(record?.binColor),
-              date,
-              time,
-            };
-          })
+               ? records.map((record, index) => {
+             const { date, time } = formatDateTime(record?.createdAt || record?.updatedAt);
+             return {
+               id: record?._id || record?.id || `${record?.createdAt || 'item'}-${index}`,
+               item: record?.itemName || record?.inputValue || record?.wastename || 'Unknown item',
+               type: formatWasteType(record?.wasteType) || 'Unclassified',
+               bin: formatBinLabel(record?.binColor),
+               date,
+               time,
+             };
+           })
         : [];
 
       if (isMountedRef.current) {

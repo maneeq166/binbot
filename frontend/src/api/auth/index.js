@@ -1,8 +1,10 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config.js";
 export const register = async ({ username, password, email }) => {
   try {
-    const res = await axios.post("http://localhost:3000/api/auth/register", {
+    
+    const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
       username,
       email,
       password,
@@ -13,6 +15,7 @@ export const register = async ({ username, password, email }) => {
     return res.data;
   } catch (error) {
     const msg = error.response?.data?.message || error.message;
+    
     // toast.error(msg);
 
     return { success: false, message: msg };
@@ -20,14 +23,16 @@ export const register = async ({ username, password, email }) => {
 };
 export const login = async ({ email, password }) => {
   try {
-    const res = await axios.post(`http://localhost:3000/api/auth/login`, {
+    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
       email,
       password,
     });
 
-    const token = res.data.data;
+    localStorage.setItem("token",res.data.data)
 
-    localStorage.setItem("token", token);
+    console.log(res);
+    
+    // No need to store token, cookies handle it
 
     // toast.success(`Logged in`);
 
@@ -35,20 +40,17 @@ export const login = async ({ email, password }) => {
   } catch (error) {
     const msg = error.response?.data?.message || error.message;
     // toast.error(msg);
+    console.log(error);
+    
     return { success: false, message: msg };
   }
 };
 
 export const me = async () => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No token found");
-    }
-
-    const res = await axios.get("http://localhost:3000/api/auth/me", {
+    const res = await axios.get(`${API_BASE_URL}/api/auth/me`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
 
